@@ -1,0 +1,16 @@
+package com.example.feature.profile.data.di
+
+import com.example.feature.profile.data.repository.ProfileRepositoryImpl
+import com.example.feature.profile.domain.repository.ProfileRepository
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class ProfileModule {
+
+    @Binds
+    abstract fun bindProfileRepository(impl: ProfileRepositoryImpl): ProfileRepository
+}

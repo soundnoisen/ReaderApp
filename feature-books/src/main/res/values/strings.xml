@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_books">Мои книги</string>
+
+    <string name="placeholder_search_books">Поиск книг...</string>
+
+    <string name="msg_nothing_found">Ничего не найдено</string>
+    <string name="msg_no_books">Нет загруженных книг</string>
+    <string name="msg_file_deleted">Файл удалён</string>
+    <string name="msg_book_loaded">Книга загружена</string>
+
+
+    <string name="action_cancel">Отмена</string>
+
+    <string name="label_delete">Удаление книги</string>
+
+    <string name="msg_delete_confirmation">Выбери откуда вы хотите удалить книгу</string>
+    <string name="msg_download_book_success">Книга скачана!</string>
+    <string name="msg_delete_book_success">Книга удалена!</string>
+
+    <string name="action_locally_delete">Локально</string>
+    <string name="action_everywhere_delete">Везде</string>
+
+    <string name="error_cover_generation_failed">Не удалось сгенерировать обложку книги</string>
+    <string name="error_file_not_found">Книга не скачана</string>
+    <string name="error_network">Ошибка сети. Проверьте соединение</string>
+    <string name="error_unknown_error">Что-то пошло не так: </string>
+
+
+</resources>

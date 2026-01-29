@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="label_font_size">Размер шрифта</string>
+    <string name="label_line_spacing">Межстрочный интервал</string>
+
+    <string name="error_file_not_found">Файл не найден</string>
+    <string name="error_invalid_format">Неподдерживаемый формат файла</string>
+    <string name="error_unable_read_file">Не удалось прочитать файл</string>
+    <string name="error_empty_file">Файл пустой</string>
+</resources>

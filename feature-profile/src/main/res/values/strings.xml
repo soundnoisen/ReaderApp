@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_profile">Профиль</string>
+
+    <string name="placeholder_name">Введите имя...</string>
+
+    <string name="action_save">Сохранить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_logout">Выйти</string>
+
+    <string name="label_logout">Выход</string>
+
+    <string name="error_user_not_authorized">Пользователь не авторизован</string>
+    <string name="error_invalid_file">Файл не является изображением</string>
+    <string name="error_no_network">Ошибка сети. Попробуйте снова</string>
+    <string name="error_failed_to_get_image">Не удалось получить изображение</string>
+    <string name="error_unknown_error">Что-то пошло не так: </string>
+
+    <string name="msg_update_success">Данные успешно обновлены!</string>
+    <string name="msg_logout_confirmation">Вы уверены, что хотите выйти из аккаунта?</string>
+</resources>

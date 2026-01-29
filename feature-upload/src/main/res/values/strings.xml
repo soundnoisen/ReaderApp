@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_download">Загрузка книги</string>
+
+    <string name="label_select_file">Выбрать файл</string>
+
+    <string name="placeholder_book_title">Название книги</string>
+    <string name="placeholder_book_author">Автор</string>
+
+    <string name="action_download">Загрузить</string>
+
+    <string name="error_network">Ошибка сети. Попробуйте снова</string>
+    <string name="error_invalid_file">"Поддерживаются только файлы: txt, pdf, epub.</string>
+    <string name="error_invalid_data">Заполните все поля.</string>
+    <string name="error_unknown_error">Что-то пошло не так: </string>
+
+    <string name="msg_download_success">Книга успешно загружена!</string>
+</resources>

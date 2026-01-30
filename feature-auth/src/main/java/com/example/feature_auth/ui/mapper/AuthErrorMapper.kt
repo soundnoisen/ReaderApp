@@ -13,4 +13,5 @@ fun AuthError.toUiText(resources: Resources): String =
         AuthError.NotValidPassword -> resources.getString(R.string.error_invalid_password)
         AuthError.DifferentPasswords -> resources.getString(R.string.error_different_passwords)
         AuthError.UserAlreadyExist -> resources.getString(R.string.error_user_already_exists)
+        AuthError.CredentialsNotFound -> resources.getString(R.string.error_credentials_not_found)
     }

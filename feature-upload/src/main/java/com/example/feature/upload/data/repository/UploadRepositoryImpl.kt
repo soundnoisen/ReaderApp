@@ -2,7 +2,7 @@ package com.example.feature.upload.data.repository
 
 import android.content.Context
 import android.net.Uri
-import com.example.core.data.datasource.BookLocalDataSource
+import com.example.core.data.source.BookLocalDataSource
 import com.example.core.data.util.generatePdfCover
 import com.example.core.domain.model.Book
 import com.example.core.domain.model.book.UploadProgress

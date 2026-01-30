@@ -8,5 +8,5 @@ import kotlinx.coroutines.flow.Flow
 interface ProfileRepository {
     fun observeProfile(): Flow<User?>
     suspend fun updateProfile(name: String?, photoUri: Uri?): UpdateProfileResult
-    fun logoutProfile()
+    suspend fun logoutProfile()
 }

@@ -73,6 +73,8 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.credentials)
-    implementation(libs.androidx.credentials.play.services.auth)
+    implementation("com.google.android.gms:play-services-auth:21.5.0")
     implementation(libs.googleid)
+
+    implementation(libs.kotlinx.coroutines.play.services)
 }

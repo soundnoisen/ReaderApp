@@ -1,4 +1,4 @@
-package com.example.core.data.datasource
+package com.example.core.data.source
 
 import com.example.core.data.local.room.BookDao
 import com.example.core.data.local.room.BookEntity

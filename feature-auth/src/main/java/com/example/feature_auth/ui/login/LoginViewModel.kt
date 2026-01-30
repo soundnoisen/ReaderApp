@@ -1,13 +1,23 @@
 package com.example.feature_auth.ui.login
 
+import android.content.ContentValues.TAG
+import android.util.Log
+import androidx.credentials.Credential
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.domain.model.auth.AuthError
 import com.example.core.domain.model.auth.AuthResult
 import com.example.core.domain.repository.NetworkCheckerRepository
+import com.example.feature_auth.R
 import com.example.feature_auth.domain.GetCurrentUserUseCase
 import com.example.feature_auth.domain.SignInUseCase
+import com.example.feature_auth.domain.SignInWithGoogleUseCase
 import com.example.feature_auth.domain.ValidateCredentialsUseCase
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +32,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val signIn: SignInUseCase,
+    private val signInWithGoogle: SignInWithGoogleUseCase,
     private val getCurrentUser: GetCurrentUserUseCase,
     private val validateCredentials: ValidateCredentialsUseCase,
     private val networkChecker: NetworkCheckerRepository
@@ -42,6 +53,7 @@ class LoginViewModel @Inject constructor(
             is LoginIntent.EmailChanged -> onEmailChange(intent.email)
             is LoginIntent.PasswordChanged -> onPasswordChange(intent.password)
             is LoginIntent.Login -> login()
+            is LoginIntent.GoogleLogin -> loginWithGoogle()
         }
     }
 
@@ -79,6 +91,20 @@ class LoginViewModel @Inject constructor(
                 }
             } finally {
                 _state.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun loginWithGoogle() {
+        if (!networkChecker.isNetworkAvailable()) {
+            emitError(AuthError.Network)
+            return
+        }
+        viewModelScope.launch {
+            val result = signInWithGoogle()
+            when (result) {
+                is AuthResult.Success -> _effect.emit(LoginEffect.NavigateToMain)
+                is AuthResult.Error -> _effect.emit(LoginEffect.ShowError(result.error))
             }
         }
     }

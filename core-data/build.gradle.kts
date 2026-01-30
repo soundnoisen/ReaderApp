@@ -39,6 +39,12 @@ android {
             "CLOUDINARY_UPLOAD_PRESET",
             "\"${project.properties["CLOUDINARY_UPLOAD_PRESET"]}\""
         )
+
+        buildConfigField(
+            "String",
+            "GOOGLE_CLIENT_ID",
+            "\"${project.properties["GOOGLE_CLIENT_ID"]}\""
+        )
     }
 
     buildTypes {
@@ -90,4 +96,10 @@ dependencies {
     implementation(libs.jsoup)
 
     implementation(libs.mhiew.android.pdf.viewer)
+
+    implementation(libs.androidx.credentials)
+    implementation("com.google.android.gms:play-services-auth:21.5.0")
+    implementation(libs.googleid)
+
+    implementation(libs.kotlinx.coroutines.play.services)
 }

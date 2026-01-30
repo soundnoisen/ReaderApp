@@ -6,5 +6,5 @@ import javax.inject.Inject
 class LogoutProfileUseCase @Inject constructor(
     private val repository: ProfileRepository
 ){
-    operator fun invoke() = repository.logoutProfile()
+    suspend operator fun invoke() = repository.logoutProfile()
 }

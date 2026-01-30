@@ -35,7 +35,7 @@ class ProfileRepositoryImpl @Inject constructor(
         return firebaseRepository.updateProfile(name, photoUrl)
     }
 
-    override fun logoutProfile() {
+    override suspend fun logoutProfile() {
         firebaseRepository.logout()
     }
 }

@@ -1,7 +1,7 @@
 package com.example.feature.books.data.repository
 
 import android.content.Context
-import com.example.core.data.datasource.BookLocalDataSource
+import com.example.core.data.source.BookLocalDataSource
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.util.generatePdfCover
 import com.example.core.domain.model.Book

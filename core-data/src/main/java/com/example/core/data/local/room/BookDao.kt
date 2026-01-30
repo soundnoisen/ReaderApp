@@ -19,11 +19,11 @@ interface BookDao {
         readingProgress: Float
     )
 
-    @Query("SELECT * FROM books")
-    fun getAllBooks(): Flow<List<BookEntity>>
+    @Query("SELECT * FROM books WHERE ownerId = :uid")
+    fun getAllBooks(uid: String): Flow<List<BookEntity>>
 
-    @Query("SELECT * FROM books")
-    suspend fun getAllBooksOnce(): List<BookEntity>
+    @Query("SELECT * FROM books WHERE ownerId = :uid")
+    suspend fun getAllBooksOnce(uid: String): List<BookEntity>
 
     @Query("SELECT * FROM books WHERE id = :id")
     suspend fun getBookById(id: String): BookEntity
@@ -31,8 +31,8 @@ interface BookDao {
     @Query("DELETE FROM books WHERE id = :bookId")
     suspend fun deleteBookById(bookId: String)
 
-    @Query("SELECT * FROM books WHERE localFilePath IS NOT NUll AND (title LIKE '%' || :query || '%' OR author LIKE '%' || :query || '%') ")
-    fun searchDownloadedBooks(query: String): Flow<List<BookEntity>>
+    @Query("SELECT * FROM books WHERE ownerId =:uid AND localFilePath IS NOT NUll AND (title LIKE '%' || :query || '%' OR author LIKE '%' || :query || '%') ")
+    fun searchDownloadedBooks(uid: String, query: String): Flow<List<BookEntity>>
 
     @Query("UPDATE books SET readingProgress = :progress WHERE id = :bookId")
     suspend fun updateReadingProgress(bookId: String, progress: Float)

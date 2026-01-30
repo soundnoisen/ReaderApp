@@ -6,6 +6,7 @@ import com.example.core.data.source.BookLocalDataSource
 import com.example.core.data.util.generatePdfCover
 import com.example.core.domain.model.Book
 import com.example.core.domain.model.book.UploadProgress
+import com.example.core.domain.repository.FirebaseRepository
 import com.example.core.domain.repository.YandexStorageRepository
 import com.example.feature.upload.BuildConfig
 import com.example.feature.upload.data.util.copyToCache
@@ -19,6 +20,7 @@ import javax.inject.Inject
 class UploadRepositoryImpl @Inject constructor(
     private val storage: YandexStorageRepository,
     private val localDataSource: BookLocalDataSource,
+    private val firebaseRepository: FirebaseRepository,
     @ApplicationContext private val context: Context
 ): UploadRepository {
 
@@ -30,14 +32,16 @@ class UploadRepositoryImpl @Inject constructor(
         storage.uploadFile(file, BuildConfig.YANDEX_BUCKET, objectKey).collect { progress ->
             if (progress is UploadProgress.Success) {
                 localDataSource.insert(
-                    Book(
+                    uid = firebaseRepository.requireCurrentUserId(),
+                    book = Book(
                         id = UUID.randomUUID().toString(),
                         title = title,
                         author = author,
                         fileUrl = progress.url,
                         localFilePath = file.absolutePath,
                         coverPath = coverPath,
-                        readingProgress = 0f
+                        readingProgress = 0f,
+
                     )
                 )
             }

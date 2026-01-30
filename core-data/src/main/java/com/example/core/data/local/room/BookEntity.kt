@@ -9,6 +9,7 @@ data class BookEntity(
     val id: String,
     val title: String,
     val author: String,
+    val ownerId: String,
     val fileUrl: String,
     val localFilePath: String?,
     val coverPath: String?,

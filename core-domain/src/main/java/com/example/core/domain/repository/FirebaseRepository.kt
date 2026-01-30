@@ -14,4 +14,5 @@ interface FirebaseRepository {
     fun userAuthorized(): Boolean
     suspend fun updateProfile(name: String?, photoUrl: String?): UpdateProfileResult
     suspend fun logout()
+    fun requireCurrentUserId(): String
 }

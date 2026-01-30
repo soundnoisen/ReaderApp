@@ -10,11 +10,12 @@ class BookLocalDataSource @Inject constructor(
     private val dao: BookDao
 ) {
 
-    suspend fun insert(book: Book) {
+    suspend fun insert(uid: String, book: Book) {
         val entity = BookEntity(
             id = book.id,
             title = book.title,
             author = book.author,
+            ownerId = uid,
             fileUrl = book.fileUrl,
             localFilePath = book.localFilePath,
             coverPath = book.coverPath,
@@ -30,15 +31,15 @@ class BookLocalDataSource @Inject constructor(
         readingProgress: Float
     ) = dao.updateBook(bookId, localFilePath, coverPath, readingProgress)
 
-    fun observeBooks(): Flow<List<BookEntity>> = dao.getAllBooks()
+    fun observeBooks(uid: String): Flow<List<BookEntity>> = dao.getAllBooks(uid)
 
-    suspend fun getAllBooksOnce(): List<BookEntity> = dao.getAllBooksOnce()
+    suspend fun getAllBooksOnce(uid: String): List<BookEntity> = dao.getAllBooksOnce(uid)
 
     suspend fun getBook(id: String): BookEntity = dao.getBookById(id)
 
     suspend fun delete(bookId: String) = dao.deleteBookById(bookId)
 
-    fun searchDownloadedBooks(query: String): Flow<List<BookEntity>> = dao.searchDownloadedBooks(query)
+    fun searchDownloadedBooks(uid: String, query: String): Flow<List<BookEntity>> = dao.searchDownloadedBooks(uid, query)
 
     suspend fun updateProgress(bookId: String, progress: Float) = dao.updateReadingProgress(bookId, progress)
 

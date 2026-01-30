@@ -112,6 +112,10 @@ class FirebaseRepositoryImpl @Inject constructor(
         awaitClose { firebaseAuth.removeAuthStateListener(listener) }
     }
 
+    override fun requireCurrentUserId(): String =
+        firebaseAuth.currentUser?.uid
+            ?: throw IllegalStateException("User not logged in")
+
     override fun userAuthorized(): Boolean = firebaseAuth.currentUser != null
 
     override suspend fun updateProfile(name: String?, photoUrl: String?): UpdateProfileResult {

@@ -5,9 +5,11 @@ import com.example.core.data.source.BookLocalDataSource
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.util.generatePdfCover
 import com.example.core.domain.model.Book
+import com.example.core.domain.model.User
 import com.example.core.domain.model.book.DeleteResult
 import com.example.core.domain.model.book.DownloadError
 import com.example.core.domain.model.book.DownloadProgress
+import com.example.core.domain.repository.FirebaseRepository
 import com.example.core.domain.repository.ReaderPositionRepository
 import com.example.core.domain.repository.YandexStorageRepository
 import com.example.feature.books.domain.repository.BookRepository
@@ -23,6 +25,7 @@ class BookRepositoryImpl @Inject constructor(
     private val storage: YandexStorageRepository,
     private val localDataSource: BookLocalDataSource,
     private val readerPosition: ReaderPositionRepository,
+    private val firebaseRepository: FirebaseRepository,
     @ApplicationContext private val context: Context
 ): BookRepository {
 
@@ -89,7 +92,7 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     override fun observeUserBooks(): Flow<List<Book>> {
-        return localDataSource.observeBooks()
+        return localDataSource.observeBooks(firebaseRepository.requireCurrentUserId())
             .map { entities ->
                 entities.map { entity ->
                    entity.toDomain()
@@ -98,7 +101,7 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     override fun searchDownloadedBooks(query: String): Flow<List<Book>> {
-        return localDataSource.searchDownloadedBooks(query)
+        return localDataSource.searchDownloadedBooks(firebaseRepository.requireCurrentUserId(), query)
             .map { entities ->
                 entities.map { entity ->
                     entity.toDomain()
@@ -107,7 +110,7 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     override suspend fun validateLocalBooks() {
-        val books = localDataSource.getAllBooksOnce()
+        val books = localDataSource.getAllBooksOnce(firebaseRepository.requireCurrentUserId())
         books.forEach { entity ->
             val bookFile = entity.localFilePath?.let { File(it) }
             val coverFile = entity.coverPath?.let { File(it) }

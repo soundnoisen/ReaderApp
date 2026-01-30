@@ -101,10 +101,15 @@ class LoginViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
+            _state.update { it.copy(isGoogleLoading = true) }
+            try {
             val result = signInWithGoogle()
             when (result) {
                 is AuthResult.Success -> _effect.emit(LoginEffect.NavigateToMain)
                 is AuthResult.Error -> _effect.emit(LoginEffect.ShowError(result.error))
+            }
+            } finally {
+                _state.update { it.copy(isGoogleLoading = false) }
             }
         }
     }

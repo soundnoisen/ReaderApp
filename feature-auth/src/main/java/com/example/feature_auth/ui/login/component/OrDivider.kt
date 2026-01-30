@@ -28,7 +28,6 @@ fun OrDivider(
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSecondary
         )
-
         Text(
             text = stringResource(R.string.label_or),
             modifier = Modifier.padding(horizontal = 8.dp),

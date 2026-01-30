@@ -16,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +32,6 @@ import com.example.feature_auth.ui.login.component.LoginFooter
 import com.example.feature_auth.ui.login.component.LoginForm
 import com.example.feature_auth.ui.login.component.OrDivider
 import com.example.feature_auth.ui.mapper.toUiText
-import kotlinx.coroutines.launch
 
 @SuppressLint("LocalContextResourcesRead")
 @Composable
@@ -106,9 +104,13 @@ fun LoginScreen(
             ) {
                 viewModel.handleIntent(LoginIntent.Login)
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             OrDivider()
-            GoogleSignInButton { viewModel.handleIntent(LoginIntent.GoogleLogin) }
+            Spacer(modifier = Modifier.height(8.dp))
+            GoogleSignInButton(
+                loading = !state.isGoogleLoading,
+                onClick = { viewModel.handleIntent(LoginIntent.GoogleLogin) }
+            )
             Spacer(modifier = Modifier.weight(1f))
             LoginFooter { onNavigateToRegister() }
         }

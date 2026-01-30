@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -15,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.example.feature_auth.R
 
 @Composable
-fun GoogleSignInButton(onClick: () -> Unit) {
+fun GoogleSignInButton(loading: Boolean, onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
         shape = CircleShape,
@@ -23,11 +24,19 @@ fun GoogleSignInButton(onClick: () -> Unit) {
         modifier = Modifier.size(56.dp),
         contentPadding = PaddingValues(0.dp)
     ) {
-        Icon(
-            modifier = Modifier.size(32.dp),
-            painter = painterResource(id = R.drawable.ic_google),
-            contentDescription = null,
-            tint = Color.Unspecified
-        )
+        if (loading) {
+            Icon(
+                modifier = Modifier.size(32.dp),
+                painter = painterResource(id = R.drawable.ic_google),
+                contentDescription = null,
+                tint = Color.Unspecified
+            )
+        } else {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.onSecondary,
+                strokeWidth = 2.dp,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }

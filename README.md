@@ -3,7 +3,7 @@
 Приложение для скачивания, хранения и чтения книг на Android.
 
 ## Функциональность
-- Регистрация и вход через Firebase Authentication
+- Регистрация и вход через Firebase Authentication / Google
 - Загружать книги в формате `.txt`, `.epub` и `.pdf`
 - Сохранять книги локально и синхронизировать их с Firebase / Yandex.Cloud
 - Читать книги с сохранением позиции
@@ -19,7 +19,7 @@
 - **DI**: Hilt
 - **Сетевое взаимодействие**: OkHttp
 - **Аутентификация**: Firebase Authentication
-- **Облачные хранилища**:     Yandex.Cloud Object Storage; Cloudinary
+- **Облачные хранилища**:     Yandex.Cloud Object Storage, Cloudinary
 - **Асинхронность и потоковые данные**: Kotlin Coroutines, Flow
 - **Парсинг EPUB/HTML**: Jsoup
 - **PDF работа**: PdfiumCore
@@ -46,4 +46,4 @@
 <img width="1584" height="717" alt="Frame 1618872826" src="https://github.com/user-attachments/assets/24adfc3a-1351-45a1-a2b7-22c0674776fa" />
 
 ## Демонстрация работы приложения
-[![Watch the video](https://img.youtube.com/vi/q2zktOLnfTA/0.jpg)](https://www.youtube.com/watch?v=q2zktOLnfTA)
+[![Watch the video](https://img.youtube.com/vi/KtGC2CS05vw/0.jpg)](https://www.youtube.com/watch?v=KtGC2CS05vw)

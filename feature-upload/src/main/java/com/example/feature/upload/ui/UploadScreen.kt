@@ -18,7 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,16 +33,21 @@ import com.example.feature.upload.R
 import com.example.feature.upload.data.util.queryFileName
 import com.example.feature.upload.ui.component.FileSelection
 import com.example.feature.upload.ui.component.UploadBottomSheet
+import com.example.feature.upload.ui.component.UploadSuccessAnimation
 import com.example.feature.upload.ui.mapper.toUiText
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UploadScreen(viewModel: UploadViewModel = hiltViewModel()) {
+fun UploadScreen(
+    isDarkTheme: Boolean,
+    viewModel: UploadViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val sheetState = rememberModalBottomSheetState()
     val context = LocalContext.current
+    var showSuccess by remember { mutableStateOf(false) }
 
     val fileLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -51,17 +58,18 @@ fun UploadScreen(viewModel: UploadViewModel = hiltViewModel()) {
         }
     }
 
-
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when(effect) {
                 is UploadEffect.OpenFilePicker -> fileLauncher.launch("*/*")
                 is UploadEffect.ShowError -> { snackBarHostState.showSnackbar(effect.error.toUiText(context.resources)) }
-                is UploadEffect.UploadSuccessToast -> Toast.makeText(context, context.resources.getString(R.string.msg_download_success), Toast.LENGTH_SHORT).show()
+                is UploadEffect.UploadSuccessToast -> {
+                    showSuccess = true
+                    Toast.makeText(context, context.resources.getString(R.string.msg_download_success), Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
-
 
     Scaffold(
         snackbarHost = {
@@ -83,11 +91,19 @@ fun UploadScreen(viewModel: UploadViewModel = hiltViewModel()) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(30.dp))
-            FileSelection(
-                uploading = state.isBottomSheetVisible,
-                onClick = { viewModel.handleIntent(UploadIntent.SelectFile) },
-            )
-            Spacer(Modifier.height(20.dp))
+
+            if (showSuccess) {
+                UploadSuccessAnimation(
+                    isDarkTheme = isDarkTheme,
+                    onAnimationFinished = { showSuccess = false }
+                )
+            } else {
+                FileSelection(
+                    uploading = state.isBottomSheetVisible,
+                    onClick = { viewModel.handleIntent(UploadIntent.SelectFile) }
+                )
+                Spacer(Modifier.height(20.dp))
+            }
         }
 
         if (state.isBottomSheetVisible) {
@@ -102,4 +118,3 @@ fun UploadScreen(viewModel: UploadViewModel = hiltViewModel()) {
         }
     }
 }
-

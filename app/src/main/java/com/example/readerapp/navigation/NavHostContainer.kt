@@ -18,7 +18,9 @@ import com.example.feature.upload.ui.UploadScreen
 fun NavHostContainer(
     navController: NavHostController,
     rootNavController: NavHostController,
-    padding: PaddingValues
+    padding: PaddingValues,
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -33,13 +35,17 @@ fun NavHostContainer(
                 )
             }
             composable("upload") {
-                UploadScreen()
+                UploadScreen(
+                    isDarkTheme = isDarkTheme
+                )
             }
             composable(
                 route = "reader/{bookId}",
                 arguments = listOf(navArgument("bookId") { type = NavType.StringType })
             ) {
                 BookReaderScreen(
+                    isDarkTheme = isDarkTheme,
+                    onThemeChange = onThemeChange,
                     navigateBack = {
                         navController.popBackStack()
                     }
@@ -47,6 +53,8 @@ fun NavHostContainer(
             }
             composable("profile") {
                 ProfileScreen(
+                    isDarkTheme = isDarkTheme,
+                    onThemeChange = onThemeChange,
                     navigateToLogin = {
                         rootNavController.navigate("login") {
                             popUpTo("main") { inclusive = true }

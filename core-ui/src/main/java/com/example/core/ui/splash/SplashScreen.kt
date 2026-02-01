@@ -43,7 +43,7 @@ fun SplashScreen(onAnimationFinished: () -> Unit) {
         ) { value, _ ->
             scale = value
         }
-        delay(100)
+        delay(300)
         onAnimationFinished()
     }
     Box(

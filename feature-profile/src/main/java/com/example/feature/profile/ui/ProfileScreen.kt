@@ -37,11 +37,11 @@ import com.example.feature.profile.ui.mapper.toUiText
 @Composable
 fun ProfileScreen(
     navigateToLogin: () -> Unit,
-    themeViewModel: ThemeViewModel = hiltViewModel(),
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
@@ -58,7 +58,7 @@ fun ProfileScreen(
                 is ProfileEffect.NavigateToLogin -> navigateToLogin()
                 is ProfileEffect.OpenFilePicker -> fileLauncher.launch("image/*")
                 is ProfileEffect.ShowError -> snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
-                is ProfileEffect.ThemeChange -> themeViewModel.changeTheme(effect.isDarkTheme)
+                is ProfileEffect.ThemeChange ->onThemeChange(effect.isDarkTheme)
                 is ProfileEffect.UploadProfileSuccessToast -> Toast.makeText(context, context.resources.getString(R.string.msg_update_success), Toast.LENGTH_SHORT).show()
             }
         }

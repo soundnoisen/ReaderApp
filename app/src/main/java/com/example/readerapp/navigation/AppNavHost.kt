@@ -9,7 +9,11 @@ import com.example.feature_auth.ui.login.LoginScreen
 import com.example.feature_auth.ui.register.RegisterScreen
 
 @Composable
-fun AppNavHost(navController: NavHostController = rememberNavController()) {
+fun AppNavHost(
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit,
+    navController: NavHostController = rememberNavController()
+) {
     NavHost(
         navController,
         startDestination = "login",
@@ -30,7 +34,11 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             )
         }
         composable("main") {
-            MainNavigation(navController)
+            MainNavigation(
+                isDarkTheme = isDarkTheme,
+                onThemeChange = onThemeChange,
+                rootNavController = navController,
+            )
         }
     }
 }

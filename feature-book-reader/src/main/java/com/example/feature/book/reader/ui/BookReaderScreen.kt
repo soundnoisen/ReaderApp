@@ -43,11 +43,11 @@ import kotlinx.coroutines.flow.drop
 @Composable
 fun BookReaderScreen(
     navigateBack: () -> Unit,
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit,
     viewModel: BookReaderViewModel = hiltViewModel(),
-    themeViewModel: ThemeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
     val listState = rememberLazyListState()
     val textContent = (state.content as? BookContent.Text)?.content.orEmpty()
     var restoredPosition by remember { mutableStateOf(false) }
@@ -84,7 +84,7 @@ fun BookReaderScreen(
             when (effect) {
                 is BookReaderEffect.NavigateBack -> navigateBack()
                 is BookReaderEffect.ShowError -> snackBarHostState.showSnackbar(effect.error.toUiText(content.resources))
-                is BookReaderEffect.ThemeChange -> themeViewModel.changeTheme(effect.isDarkTheme)
+                is BookReaderEffect.ThemeChange -> onThemeChange(effect.isDarkTheme)
             }
         }
     }

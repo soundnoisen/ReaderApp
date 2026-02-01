@@ -75,4 +75,6 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.okhttp)
+
+    implementation("com.airbnb.android:lottie-compose:6.7.1")
 }

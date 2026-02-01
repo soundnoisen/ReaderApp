@@ -2,6 +2,7 @@ package com.example.feature.upload.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,7 +48,6 @@ fun FileSelection(
                 Icon(
                     painter = painterResource(R.drawable.ic_add_file),
                     tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(22.dp),
                     contentDescription = null
                 )
             }

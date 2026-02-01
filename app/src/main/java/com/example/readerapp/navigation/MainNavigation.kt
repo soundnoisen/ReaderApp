@@ -6,14 +6,23 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun MainNavigation(rootNavController: NavHostController) {
+fun MainNavigation(
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit,
+    rootNavController: NavHostController
+) {
     val bottomNavController = rememberNavController()
 
     Scaffold(
         bottomBar = {
             BottomNavigationBar(navController = bottomNavController)
         }, content = { padding ->
-            NavHostContainer(navController = bottomNavController, padding = padding, rootNavController = rootNavController)
+            NavHostContainer(
+                navController = bottomNavController,
+                rootNavController = rootNavController,
+                padding = padding,
+                isDarkTheme = isDarkTheme,
+                onThemeChange = onThemeChange)
         }
     )
 }

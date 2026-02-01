@@ -6,9 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.example.core.ui.SplashViewModel
 import com.example.core.ui.ThemeViewModel
 import com.example.core.ui.splash.SplashScreen
@@ -31,7 +28,10 @@ class MainActivity : ComponentActivity() {
                 if (showSplash) {
                     SplashScreen { splashViewModel.finishSplash() }
                 } else {
-                    AppNavHost()
+                    AppNavHost(
+                        isDarkTheme = isDarkTheme,
+                        onThemeChange = themeViewModel::changeTheme,
+                    )
                 }
             }
         }

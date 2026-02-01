@@ -46,4 +46,4 @@
 <img width="1584" height="717" alt="Frame 1618872826" src="https://github.com/user-attachments/assets/24adfc3a-1351-45a1-a2b7-22c0674776fa" />
 
 ## Демонстрация работы приложения
-[![Watch the video](https://img.youtube.com/vi/KtGC2CS05vw/0.jpg)](https://www.youtube.com/watch?v=KtGC2CS05vw)
+[![Watch the video](https://img.youtube.com/vi/KtGC2CS05vw/0.jpg)](https://www.youtube.com/shorts?v=KtGC2CS05vw)

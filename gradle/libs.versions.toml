@@ -6,6 +6,7 @@ composeBomVersion = "2024.01.00"
 coilGif = "2.7.0"
 coilVersion = "2.7.0"
 coilComposeVersion = "2.7.0"
+coreSplashscreen = "1.2.0"
 credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
 datastorePreferences = "1.2.0"
@@ -48,6 +49,7 @@ android-pdf-viewer = { module = "com.github.barteksc:android-pdf-viewer", versio
 androidx-compose-bom-v20240100 = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
 androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "materialVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }

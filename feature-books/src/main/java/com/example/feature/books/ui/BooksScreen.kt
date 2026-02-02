@@ -56,9 +56,10 @@ fun BooksScreen(
             currentEffect = effect
             when(effect) {
                 is BooksEffect.OpenBook -> navigateToBook(effect.book.id)
-                is BooksEffect.ShowError -> snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
                 is BooksEffect.DownloadBookSuccessToast -> Toast.makeText(context, context.resources.getString(R.string.msg_download_book_success), Toast.LENGTH_SHORT).show()
                 is BooksEffect.DeleteBookSuccessToast -> Toast.makeText(context, context.resources.getString(R.string.msg_delete_book_success), Toast.LENGTH_SHORT).show()
+                is BooksEffect.ShowDeleteError -> snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
+                is BooksEffect.ShowDownloadError -> snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
             }
         }
     }
@@ -67,7 +68,7 @@ fun BooksScreen(
         snackbarHost = {
             BaseSnackBar(
                 snackBarHostState = snackBarHostState,
-                canRetry = currentEffect?.let { it is BooksEffect.ShowError && it.canRetry } ?: false,
+                canRetry = currentEffect?.let { it is BooksEffect.ShowDownloadError && it.canRetry } ?: false,
                 onRetry = { viewModel.handleIntent(BooksIntent.RetryClicked) }
             )
         },
@@ -131,7 +132,8 @@ fun BooksScreen(
                                 } else {
                                     viewModel.handleIntent(BooksIntent.BookDeleteClicked(book))
                                 }
-                            }
+                            },
+                            onDelete = { book -> viewModel.handleIntent(BooksIntent.BookDeleteClicked(book)) }
                         )
                     }
                 }

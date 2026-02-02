@@ -3,6 +3,8 @@ package com.example.feature.books.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.domain.model.Book
+import com.example.core.domain.model.book.DeleteError
+import com.example.core.domain.model.book.DeleteResult
 import com.example.core.domain.model.book.DownloadError
 import com.example.core.domain.model.book.DownloadProgress
 import com.example.core.domain.repository.NetworkCheckerRepository
@@ -74,7 +76,12 @@ class BooksViewModel @Inject constructor(
     val book = state.value.selectedBook
     viewModelScope.launch {
       _state.update { it.copy(isLoading = true) }
-      if (book != null) everywhereDeleteBook(book)
+      if (book != null) {
+        when(val result = everywhereDeleteBook(book)){
+            is DeleteResult.Error -> emitDeleteError(result.error)
+            is DeleteResult.Success -> _effect.emit(BooksEffect.DeleteBookSuccessToast)
+        }
+      }
       _state.update { it.copy(isLoading = false, isDeleteDialogVisible = false) }
     }
   }
@@ -84,6 +91,7 @@ class BooksViewModel @Inject constructor(
     viewModelScope.launch {
       _state.update { it.copy(isLoading = true) }
       if (book != null) locallyDeleteBook(book)
+      _effect.emit(BooksEffect.DeleteBookSuccessToast)
       _state.update { it.copy(isLoading = false, isDeleteDialogVisible = false) }
     }
   }
@@ -92,7 +100,6 @@ class BooksViewModel @Inject constructor(
   private fun deleteDismissed() {
     viewModelScope.launch {
       _state.update { it.copy(selectedBook = null, isDeleteDialogVisible = false) }
-      _effect.emit(BooksEffect.DeleteBookSuccessToast)
     }
   }
 
@@ -101,7 +108,7 @@ class BooksViewModel @Inject constructor(
       if (book.localFilePath != null) {
         _effect.emit(BooksEffect.OpenBook(book))
       } else {
-        emitError(DownloadError.FileNotFound)
+        emitDownloadError(DownloadError.FileNotFound)
       }
     }
   }
@@ -130,7 +137,7 @@ class BooksViewModel @Inject constructor(
     _state.update { it.copy(selectedBook = book) }
 
     if (!networkChecker.isNetworkAvailable()) {
-      emitError(DownloadError.Network, true)
+      emitDownloadError(DownloadError.Network, true)
       return
     }
 
@@ -148,7 +155,7 @@ class BooksViewModel @Inject constructor(
 
           is DownloadProgress.Error -> {
             updateBookState(book.id) { it.copy(downloadProgress = DownloadProgress.Idle) }
-            emitError(progress.error)
+            emitDownloadError(progress.error)
           }
           is DownloadProgress.Idle -> Unit
         }
@@ -186,9 +193,14 @@ class BooksViewModel @Inject constructor(
       .launchIn(viewModelScope)
   }
 
-  private fun emitError(error: DownloadError, canRetry: Boolean = false) {
+  private fun emitDownloadError(error: DownloadError, canRetry: Boolean = false) {
     viewModelScope.launch {
-      _effect.emit(BooksEffect.ShowError(error, canRetry))
+      _effect.emit(BooksEffect.ShowDownloadError(error, canRetry))
+    }
+  }
+  private fun emitDeleteError(error: DeleteError, canRetry: Boolean = false) {
+    viewModelScope.launch {
+      _effect.emit(BooksEffect.ShowDeleteError(error, canRetry))
     }
   }
 }

@@ -1,6 +1,5 @@
 package com.example.feature_auth.ui.login
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,8 +31,8 @@ import com.example.feature_auth.ui.login.component.LoginFooter
 import com.example.feature_auth.ui.login.component.LoginForm
 import com.example.feature_auth.ui.login.component.OrDivider
 import com.example.feature_auth.ui.mapper.toUiText
+import kotlinx.coroutines.flow.collectLatest
 
-@SuppressLint("LocalContextResourcesRead")
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
@@ -41,16 +40,17 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    var currentEffect by remember { mutableStateOf<LoginEffect?>(null) }
+    var retryLogin by remember { mutableStateOf(false) }
     val snackBarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
-            currentEffect = effect
+        viewModel.effect.collectLatest { effect ->
             when (effect) {
                 is LoginEffect.NavigateToMain -> onNavigateToMain()
+                is LoginEffect.NavigateToRegister -> onNavigateToRegister()
                 is LoginEffect.ShowError -> {
+                    retryLogin = effect.canRetry
                     snackBarHostState.showSnackbar(
                         message = effect.error.toUiText(context.resources)
                     )
@@ -63,7 +63,7 @@ fun LoginScreen(
         snackbarHost = {
             BaseSnackBar(
                 snackBarHostState = snackBarHostState,
-                canRetry = currentEffect?.let { it is LoginEffect.ShowError && it.canRetry } ?: false,
+                canRetry = retryLogin,
                 onRetry = { viewModel.handleIntent(LoginIntent.Login) },
                 modifier = Modifier.padding(top = 50.dp)
             )
@@ -86,7 +86,9 @@ fun LoginScreen(
 
             LoginForm(
                 email = state.email,
+                emailError = state.emailError?.toUiText(context.resources),
                 password = state.password,
+                passwordError = state.passwordError?.toUiText(context.resources),
                 enabled = !state.isLoading,
                 onEmailChange = {
                     viewModel.handleIntent(LoginIntent.EmailChanged(it))
@@ -112,7 +114,7 @@ fun LoginScreen(
                 onClick = { viewModel.handleIntent(LoginIntent.GoogleLogin) }
             )
             Spacer(modifier = Modifier.weight(1f))
-            LoginFooter { onNavigateToRegister() }
+            LoginFooter { viewModel.handleIntent(LoginIntent.RegisterClicked) }
         }
     }
 }

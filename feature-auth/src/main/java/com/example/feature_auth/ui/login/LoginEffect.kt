@@ -5,5 +5,6 @@ import com.example.core.domain.model.auth.AuthError
 
 sealed class LoginEffect {
     object NavigateToMain: LoginEffect()
+    object NavigateToRegister: LoginEffect()
     data class ShowError(val error: AuthError, val canRetry: Boolean = false): LoginEffect()
 }

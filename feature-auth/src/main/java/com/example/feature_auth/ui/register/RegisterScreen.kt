@@ -30,6 +30,7 @@ import com.example.feature_auth.R
 import com.example.feature_auth.ui.mapper.toUiText
 import com.example.feature_auth.ui.register.component.RegisterFooter
 import com.example.feature_auth.ui.register.component.RegisterForm
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun RegisterScreen(
@@ -38,18 +39,19 @@ fun RegisterScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
-    var currentEffect by remember { mutableStateOf<RegisterEffect?>(null) }
+    var retryLogin by remember { mutableStateOf(false) }
     val snackBarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
-            currentEffect = effect
+        viewModel.effect.collectLatest { effect ->
             when(effect) {
-                is RegisterEffect.NavigateToLogin -> {
+                is RegisterEffect.NavigateToLogin -> onNavigateToLogin()
+                is RegisterEffect.RegisterSuccess -> {
                     Toast.makeText(context, context.resources.getString(R.string.msg_register_success), Toast.LENGTH_SHORT).show()
                     onNavigateToLogin()
                 }
                 is RegisterEffect.ShowError -> {
+                    retryLogin = effect.canRetry
                     snackBarHostState.showSnackbar(
                         message = effect.error.toUiText(context.resources)
                     )
@@ -62,7 +64,7 @@ fun RegisterScreen(
         snackbarHost = {
             BaseSnackBar(
                 snackBarHostState  = snackBarHostState,
-                canRetry = currentEffect?.let { it is RegisterEffect.ShowError && it.canRetry } ?: false,
+                canRetry = retryLogin,
                 onRetry = { viewModel.handleIntent(RegisterIntent.Registration) },
                 modifier = Modifier.padding(top = 50.dp)
             )
@@ -84,18 +86,15 @@ fun RegisterScreen(
 
             RegisterForm(
                 email = state.email,
+                emailError = state.emailError?.toUiText(context.resources),
                 password = state.password,
-                confirmPassword = state.passwordRepeat,
+                passwordError = state.passwordError?.toUiText(context.resources),
+                passwordConfirm = state.passwordConfirm,
+                passwordConfirmError = state.passwordConfirmError?.toUiText(context.resources),
                 enabled = !state.isLoading,
-                onEmailChange = {
-                    viewModel.handleIntent(RegisterIntent.EmailChanged(it))
-                },
-                onPasswordChange = {
-                    viewModel.handleIntent(RegisterIntent.PasswordChanged(it))
-                },
-                onPasswordConfirmChange = {
-                    viewModel.handleIntent(RegisterIntent.PasswordRepeatChanged(it))
-                },
+                onEmailChange = { viewModel.handleIntent(RegisterIntent.EmailChanged(it)) },
+                onPasswordChange = { viewModel.handleIntent(RegisterIntent.PasswordChanged(it)) },
+                onPasswordConfirmChange = { viewModel.handleIntent(RegisterIntent.PasswordConfirmChanged(it)) },
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -108,7 +107,7 @@ fun RegisterScreen(
             }
 
             Spacer(modifier = Modifier.weight(1f))
-            RegisterFooter { onNavigateToLogin() }
+            RegisterFooter { viewModel.handleIntent(RegisterIntent.LoginClicked) }
         }
     }
 }

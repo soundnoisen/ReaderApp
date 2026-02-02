@@ -1,4 +1,4 @@
-package com.example.feature_auth.domain
+package com.example.feature_auth.domain.repository
 
 import com.example.core.domain.repository.FirebaseRepository
 import jakarta.inject.Inject

@@ -65,10 +65,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun login() {
-        validateInputs()?.let {
-            Log.e("CredentialsValidator", "зашел")
-            return emitError(it)
-        }
+        validateInputs()?.let { return emitError(it) }
 
         val (email, password) = state.value
 

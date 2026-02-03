@@ -1,11 +1,10 @@
 package com.example.feature.books.data.repository
 
 import android.content.Context
-import com.example.core.data.source.BookLocalDataSource
 import com.example.core.data.mapper.toDomain
+import com.example.core.data.source.BookLocalDataSource
 import com.example.core.data.util.generatePdfCover
 import com.example.core.domain.model.Book
-import com.example.core.domain.model.User
 import com.example.core.domain.model.book.DeleteResult
 import com.example.core.domain.model.book.DownloadError
 import com.example.core.domain.model.book.DownloadProgress

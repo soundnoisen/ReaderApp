@@ -13,6 +13,3 @@ sealed class DownloadError {
     object CoverGenerationFailed: DownloadError()
     data class Unknown(val error: String): DownloadError()
 }
-
-
-

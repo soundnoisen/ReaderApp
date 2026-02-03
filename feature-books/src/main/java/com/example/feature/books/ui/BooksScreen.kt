@@ -38,6 +38,7 @@ import com.example.feature.books.ui.component.DeleteAlertDialog
 import com.example.feature.books.ui.component.ListInformationText
 import com.example.feature.books.ui.component.SearchTextField
 import com.example.feature.books.ui.mapper.toUiText
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,20 +47,22 @@ fun BooksScreen(
     navigateToBook: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    var currentEffect by remember { mutableStateOf<BooksEffect?>(null) }
+    var retryLogin by remember { mutableStateOf(false) }
     val snackBarHostState = remember { SnackbarHostState() }
     val pullRefreshState = rememberPullToRefreshState()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
-            currentEffect = effect
+        viewModel.effect.collectLatest { effect ->
             when(effect) {
                 is BooksEffect.OpenBook -> navigateToBook(effect.book.id)
                 is BooksEffect.DownloadBookSuccessToast -> Toast.makeText(context, context.resources.getString(R.string.msg_download_book_success), Toast.LENGTH_SHORT).show()
                 is BooksEffect.DeleteBookSuccessToast -> Toast.makeText(context, context.resources.getString(R.string.msg_delete_book_success), Toast.LENGTH_SHORT).show()
                 is BooksEffect.ShowDeleteError -> snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
-                is BooksEffect.ShowDownloadError -> snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
+                is BooksEffect.ShowDownloadError -> {
+                    retryLogin = effect.canRetry
+                    snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
+                }
             }
         }
     }
@@ -68,7 +71,7 @@ fun BooksScreen(
         snackbarHost = {
             BaseSnackBar(
                 snackBarHostState = snackBarHostState,
-                canRetry = currentEffect?.let { it is BooksEffect.ShowDownloadError && it.canRetry } ?: false,
+                canRetry = retryLogin,
                 onRetry = { viewModel.handleIntent(BooksIntent.RetryClicked) }
             )
         },
@@ -91,8 +94,7 @@ fun BooksScreen(
 
             SearchTextField(
                 value = state.query,
-                onValueChange = {
-                    viewModel.handleIntent(BooksIntent.SearchQueryChanged(it)) },
+                onValueChange = { viewModel.handleIntent(BooksIntent.SearchQueryChanged(it)) },
                 onClearClicked = {viewModel.handleIntent(BooksIntent.SearchQueryClear) },
                 clearVisibility = state.query.isNotBlank(),
                 placeholder = stringResource(R.string.placeholder_search_books),

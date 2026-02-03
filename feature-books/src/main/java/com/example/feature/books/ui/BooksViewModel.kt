@@ -37,170 +37,168 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BooksViewModel @Inject constructor(
-  private val networkChecker: NetworkCheckerRepository,
-  private val observeUserBooks: ObserveUserBooksUseCase,
-  private val locallyDeleteBook: LocallyDeleteBookUseCase,
-  private val everywhereDeleteBook: EverywhereDeleteBookUseCase,
-  private val downloadBook: DownloadBookUseCase,
-  private val refreshBooks: RefreshBooksUseCase,
-  private val searchBooks: SearchDownloadedBooksUseCase
+    private val networkChecker: NetworkCheckerRepository,
+    private val observeUserBooks: ObserveUserBooksUseCase,
+    private val locallyDeleteBook: LocallyDeleteBookUseCase,
+    private val everywhereDeleteBook: EverywhereDeleteBookUseCase,
+    private val downloadBook: DownloadBookUseCase,
+    private val refreshBooks: RefreshBooksUseCase,
+    private val searchBooks: SearchDownloadedBooksUseCase
 ): ViewModel() {
 
-  private val _state = MutableStateFlow(BooksState())
-  val state: StateFlow<BooksState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(BooksState())
+    val state: StateFlow<BooksState> = _state.asStateFlow()
 
-  private val _effect = MutableSharedFlow<BooksEffect>()
-  val effect: SharedFlow<BooksEffect> = _effect.asSharedFlow()
+    private val _effect = MutableSharedFlow<BooksEffect>()
+    val effect: SharedFlow<BooksEffect> = _effect.asSharedFlow()
 
-  init {
-    observeBooks()
-  }
-
-  fun handleIntent(intent: BooksIntent) {
-    when (intent) {
-        is BooksIntent.BookDeleteClicked -> deleteBook(intent.book)
-        is BooksIntent.BookDownloadClicked -> download(intent.book)
-        is BooksIntent.BookOpenClicked -> openBook(intent.book)
-        is BooksIntent.SearchQueryChanged -> searchQueryChanged(intent.query)
-        is BooksIntent.SearchQueryClear -> searchQueryClear()
-        is BooksIntent.Refresh -> refresh()
-        is BooksIntent.RetryClicked -> _state.value.selectedBook?.let { download(it) }
-        is BooksIntent.DeleteDismissed -> deleteDismissed()
-        is BooksIntent.EverywhereDeleteConfirmed -> everywhereDeleteConfirmed()
-        is BooksIntent.LocallyDeleteConfirmed -> locallyDeleteConfirmed()
+    init {
+        observeBooks()
     }
-  }
 
-
-  private fun everywhereDeleteConfirmed() {
-    val book = state.value.selectedBook
-    viewModelScope.launch {
-      _state.update { it.copy(isLoading = true) }
-      if (book != null) {
-        when(val result = everywhereDeleteBook(book)){
-            is DeleteResult.Error -> emitDeleteError(result.error)
-            is DeleteResult.Success -> _effect.emit(BooksEffect.DeleteBookSuccessToast)
+    fun handleIntent(intent: BooksIntent) {
+        when (intent) {
+            is BooksIntent.BookDeleteClicked -> deleteBook(intent.book)
+            is BooksIntent.BookDownloadClicked -> download(intent.book)
+            is BooksIntent.BookOpenClicked -> openBook(intent.book)
+            is BooksIntent.SearchQueryChanged -> searchQueryChanged(intent.query)
+            is BooksIntent.SearchQueryClear -> searchQueryChanged("")
+            is BooksIntent.Refresh -> refresh()
+            is BooksIntent.RetryClicked -> retryDownload()
+            is BooksIntent.DeleteDismissed -> deleteDismissed()
+            is BooksIntent.EverywhereDeleteConfirmed -> everywhereDeleteConfirmed()
+            is BooksIntent.LocallyDeleteConfirmed -> locallyDeleteConfirmed()
         }
-      }
-      _state.update { it.copy(isLoading = false, isDeleteDialogVisible = false) }
-    }
-  }
-
-  private fun locallyDeleteConfirmed() {
-    val book = state.value.selectedBook
-    viewModelScope.launch {
-      _state.update { it.copy(isLoading = true) }
-      if (book != null) locallyDeleteBook(book)
-      _effect.emit(BooksEffect.DeleteBookSuccessToast)
-      _state.update { it.copy(isLoading = false, isDeleteDialogVisible = false) }
-    }
-  }
-
-
-  private fun deleteDismissed() {
-    viewModelScope.launch {
-      _state.update { it.copy(selectedBook = null, isDeleteDialogVisible = false) }
-    }
-  }
-
-  private fun openBook(book: Book) {
-    viewModelScope.launch {
-      if (book.localFilePath != null) {
-        _effect.emit(BooksEffect.OpenBook(book))
-      } else {
-        emitDownloadError(DownloadError.FileNotFound)
-      }
-    }
-  }
-
-  private fun refresh() {
-    viewModelScope.launch {
-      _state.update { it.copy(isLoading = true) }
-      refreshBooks()
-      _state.update { it.copy(isLoading = false) }
-    }
-  }
-
-  private fun searchQueryChanged(query: String) {
-    _state.update { it.copy( query = query ) }
-  }
-
-  private fun searchQueryClear() {
-    _state.update { it.copy( query = "" ) }
-  }
-
-  private fun deleteBook(book: Book) {
-    _state.update { it.copy(selectedBook = book, isDeleteDialogVisible = true) }
-  }
-
-  private fun download(book: Book) {
-    _state.update { it.copy(selectedBook = book) }
-
-    if (!networkChecker.isNetworkAvailable()) {
-      emitDownloadError(DownloadError.Network, true)
-      return
     }
 
-    viewModelScope.launch {
-      downloadBook(book).collect { progress ->
-        when (progress) {
-          is DownloadProgress.Downloading -> {
-            updateBookState(book.id) { it.copy(downloadProgress = progress) }
-          }
+    private fun retryDownload() {
+        _state.value.selectedBook?.let { download(it) }
+    }
 
-          is DownloadProgress.Success -> {
-            updateBookState(book.id) { it.copy(downloadProgress = progress) }
-            _effect.emit(BooksEffect.DownloadBookSuccessToast)
-          }
+    private fun everywhereDeleteConfirmed() {
+        performDelete(
+            deleteType = { everywhereDeleteBook(it) }
+        )
+    }
 
-          is DownloadProgress.Error -> {
-            updateBookState(book.id) { it.copy(downloadProgress = DownloadProgress.Idle) }
-            emitDownloadError(progress.error)
-          }
-          is DownloadProgress.Idle -> Unit
+    private fun locallyDeleteConfirmed() {
+        performDelete(
+            deleteType = { book ->
+                locallyDeleteBook(book)
+                null
+            }
+        )
+    }
+
+    private fun performDelete(
+        deleteType: suspend (Book) -> DeleteResult?
+    ) {
+        val book = _state.value.selectedBook ?: return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                deleteType(book)?.let { result ->
+                    when (result) {
+                        is DeleteResult.Error -> emitDeleteError(result.error)
+                        is DeleteResult.Success -> sendEffect(BooksEffect.DeleteBookSuccessToast)
+                    }
+                } ?: run {
+                    sendEffect(BooksEffect.DeleteBookSuccessToast)
+                }
+            } finally {
+                _state.update { it.copy(isLoading = false, isDeleteDialogVisible = false) }
+            }
         }
-      }
     }
-  }
 
-  private fun updateBookState(bookId: String, update: (Book) -> Book) {
-    _state.update { state ->
-      state.copy(
-        books = state.books.map { if (it.id == bookId) update(it) else it }
-      )
+    private fun deleteDismissed() {
+        _state.update { it.copy(selectedBook = null, isDeleteDialogVisible = false) }
     }
-  }
 
-  @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-  private fun observeBooks() {
-    state
-      .map { it.query }
-      .debounce(300)
-      .distinctUntilChanged()
-      .flatMapLatest { query ->
-        val booksFlow = if (query.isBlank()) {
-          observeUserBooks()
-        } else {
-          searchBooks(query)
+    private fun openBook(book: Book) {
+        if (book.localFilePath != null) sendEffect(BooksEffect.OpenBook(book))
+        else emitDownloadError(DownloadError.FileNotFound)
+    }
+
+    private fun refresh() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                refreshBooks()
+            } finally {
+                _state.update { it.copy(isLoading = false) }
+            }
         }
-        booksFlow
-          .onStart { _state.update { it.copy(isLoading = true) } }
-          .onEach { _state.update { it.copy(isLoading = false) } }
-      }
-      .onEach { books ->
-        _state.update { it.copy(books = books) }
-      }
-      .launchIn(viewModelScope)
-  }
+    }
 
-  private fun emitDownloadError(error: DownloadError, canRetry: Boolean = false) {
-    viewModelScope.launch {
-      _effect.emit(BooksEffect.ShowDownloadError(error, canRetry))
+    private fun searchQueryChanged(query: String) {
+        _state.update { it.copy( query = query ) }
     }
-  }
-  private fun emitDeleteError(error: DeleteError, canRetry: Boolean = false) {
-    viewModelScope.launch {
-      _effect.emit(BooksEffect.ShowDeleteError(error, canRetry))
+
+    private fun deleteBook(book: Book) {
+        _state.update { it.copy(selectedBook = book, isDeleteDialogVisible = true) }
     }
-  }
+
+    private fun download(book: Book) {
+        _state.update { it.copy(selectedBook = book) }
+
+        if (!networkChecker.isNetworkAvailable())
+            return emitDownloadError(DownloadError.Network, true)
+
+        viewModelScope.launch {
+            downloadBook(book).collect { progress ->
+                updateBookState(book.id) { it.copy(downloadProgress = progress) }
+                when (progress) {
+                    is DownloadProgress.Success -> sendEffect(BooksEffect.DownloadBookSuccessToast)
+                    is DownloadProgress.Error -> emitDownloadError(progress.error)
+                    else -> Unit
+                }
+            }
+        }
+    }
+
+    private fun updateBookState(bookId: String, update: (Book) -> Book) {
+        _state.update { state ->
+            state.copy(
+                books = state.books.map { if (it.id == bookId) update(it) else it }
+            )
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    private fun observeBooks() {
+        state
+            .map { it.query }
+            .debounce(300)
+            .distinctUntilChanged()
+            .flatMapLatest { query ->
+                val booksFlow = if (query.isBlank()) {
+                    observeUserBooks()
+                } else {
+                    searchBooks(query)
+                }
+                booksFlow
+                    .onStart { _state.update { it.copy(isLoading = true) } }
+                    .onEach { _state.update { it.copy(isLoading = false) } }
+            }
+            .onEach { books ->
+                _state.update { it.copy(books = books) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun emitDownloadError(error: DownloadError, canRetry: Boolean = false) {
+        sendEffect(BooksEffect.ShowDownloadError(error, canRetry))
+    }
+
+    private fun emitDeleteError(error: DeleteError) {
+        sendEffect(BooksEffect.ShowDeleteError(error))
+    }
+
+    private fun sendEffect(effect: BooksEffect) {
+        viewModelScope.launch {
+            _effect.emit(effect)
+        }
+    }
 }

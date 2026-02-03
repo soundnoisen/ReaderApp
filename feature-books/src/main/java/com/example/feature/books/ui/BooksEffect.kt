@@ -7,7 +7,7 @@ import com.example.core.domain.model.book.DownloadError
 sealed class BooksEffect {
     data class OpenBook(val book: Book): BooksEffect()
     data class ShowDownloadError(val error: DownloadError, val canRetry: Boolean = false): BooksEffect()
-    data class ShowDeleteError(val error: DeleteError, val canRetry: Boolean = false): BooksEffect()
+    data class ShowDeleteError(val error: DeleteError): BooksEffect()
     object DownloadBookSuccessToast: BooksEffect()
     object DeleteBookSuccessToast: BooksEffect()
 }

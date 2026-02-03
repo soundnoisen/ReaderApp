@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.component.BaseErrorText
 import com.example.core.ui.component.BaseTextField
 import com.example.feature.upload.R
 
@@ -13,6 +14,8 @@ fun BookInfoForm(
     filePath: String,
     title: String,
     author: String,
+    authorError: String? = null,
+    titleError: String? = null,
     enabled: Boolean = true,
     onTitleChange: (String) -> Unit,
     onAuthorChange: (String) -> Unit,
@@ -29,11 +32,19 @@ fun BookInfoForm(
             onValueChange = onTitleChange,
             placeholder = stringResource(R.string.placeholder_book_title)
         )
+        BaseErrorText(
+            visibility = !titleError.isNullOrEmpty(),
+            text = titleError.orEmpty()
+        )
         BaseTextField(
             value = author,
             enabled = enabled,
             onValueChange = onAuthorChange,
             placeholder = stringResource(R.string.placeholder_book_author)
+        )
+        BaseErrorText(
+            visibility = !authorError.isNullOrEmpty(),
+            text = authorError.orEmpty()
         )
     }
 }

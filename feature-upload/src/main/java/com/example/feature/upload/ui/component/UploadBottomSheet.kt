@@ -22,6 +22,8 @@ import com.example.feature.upload.ui.UploadState
 @Composable
 fun UploadBottomSheet(
     state: UploadState,
+    authorError: String? = null,
+    titleError: String? = null,
     sheetState: SheetState,
     onTitleChange: (String) -> Unit,
     onAuthorChange: (String) -> Unit,
@@ -42,6 +44,8 @@ fun UploadBottomSheet(
                 filePath = state.uri?.toString() ?: "",
                 title = state.title,
                 author = state.author,
+                titleError = titleError,
+                authorError = authorError,
                 onTitleChange = onTitleChange,
                 onAuthorChange = onAuthorChange
             )

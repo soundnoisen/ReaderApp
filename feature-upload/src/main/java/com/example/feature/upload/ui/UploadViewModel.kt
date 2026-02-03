@@ -7,7 +7,9 @@ import com.example.core.domain.model.book.UploadError
 import com.example.core.domain.model.book.UploadProgress
 import com.example.core.domain.repository.NetworkCheckerRepository
 import com.example.feature.upload.domain.usecase.UploadFileUseCase
+import com.example.feature.upload.domain.validator.UploadValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -21,6 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class UploadViewModel @Inject constructor(
     private val networkChecker: NetworkCheckerRepository,
+    private val validator: UploadValidator,
     private val upload: UploadFileUseCase
 ): ViewModel() {
 
@@ -29,6 +32,8 @@ class UploadViewModel @Inject constructor(
 
     private val _effect = MutableSharedFlow<UploadEffect>()
     val effect: SharedFlow<UploadEffect> = _effect.asSharedFlow()
+
+    private var uploadJob: Job? = null
 
     fun handleIntent(intent: UploadIntent) {
         when(intent) {
@@ -43,17 +48,17 @@ class UploadViewModel @Inject constructor(
     }
 
     private fun titleChange(title: String) {
-        _state.update{ it.copy(title = title) }
+        val error = validator.validateField(title)
+        _state.update{ it.copy(title = title, titleError = error) }
     }
 
     private fun authorChange(author: String) {
-        _state.update{ it.copy(author = author) }
+        val error = validator.validateField(author)
+        _state.update{ it.copy(author = author, authorError = error) }
     }
 
     private fun emitFilePicker() {
-        viewModelScope.launch {
-            _effect.emit(UploadEffect.OpenFilePicker)
-        }
+        sendEffect(UploadEffect.OpenFilePicker)
     }
 
     private fun clear() {
@@ -61,10 +66,11 @@ class UploadViewModel @Inject constructor(
     }
 
     private fun fileSelect(fileUri: Uri, fileName: String) {
-        if (!isValidFile(fileName)) {
-            emitError(UploadError.InvalidFile)
-            return
+
+        validator.validExtension(fileName)?.let {
+            return emitError(it)
         }
+
         _state.update {
             it.copy(
                 uri = fileUri,
@@ -74,53 +80,37 @@ class UploadViewModel @Inject constructor(
         }
     }
 
-
-    fun upload() {
+    private fun upload() {
         val state = _state.value
 
-        if (state.uri == null || state.title.isBlank() || state.author.isBlank()) {
-            emitError(UploadError.InvalidData)
-            return
-        }
+        if (state.uri == null || state.authorError != null || state.titleError != null)
+            return emitError(UploadError.InvalidData)
 
-        if (!networkChecker.isNetworkAvailable()) {
-            emitError(UploadError.Network)
-            return
-        }
+        if (!networkChecker.isNetworkAvailable()) return emitError(UploadError.Network)
 
-        viewModelScope.launch {
+        uploadJob?.cancel()
+        uploadJob = viewModelScope.launch {
             upload(state.uri,state.title, state.author).collect { progress ->
-                handleUploadProgress(progress)
-            }
-        }
-    }
-
-    private fun handleUploadProgress(progress: UploadProgress) {
-        when (progress) {
-            is UploadProgress.Uploading -> _state.update { it.copy(progress = progress) }
-            is UploadProgress.Success -> {
                 _state.update { it.copy(progress = progress) }
-                clear()
-                viewModelScope.launch { _effect.emit(UploadEffect.UploadSuccessToast) }
+                when (progress) {
+                    is UploadProgress.Success -> {
+                        clear()
+                        sendEffect(UploadEffect.UploadSuccess)
+                    }
+                    is UploadProgress.Error -> emitError(progress.error)
+                    else -> Unit
+                }
             }
-            is UploadProgress.Error -> {
-                _state.update { it.copy(progress = UploadProgress.Idle) }
-                emitError(progress.error)
-            }
-            is UploadProgress.Idle -> Unit
         }
     }
-
 
     private fun emitError(error: UploadError) {
-        viewModelScope.launch {
-            _effect.emit(UploadEffect.ShowError(error))
-        }
+        sendEffect(UploadEffect.ShowError(error))
     }
 
-    private fun isValidFile(fileName: String): Boolean {
-        return fileName
-            .substringAfterLast('.', "")
-            .lowercase() in setOf("txt", "epub", "pdf")
+    private fun sendEffect(effect: UploadEffect) {
+        viewModelScope.launch {
+            _effect.emit(effect)
+        }
     }
 }

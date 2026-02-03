@@ -11,7 +11,7 @@
 
     <string name="error_network">Ошибка сети. Попробуйте снова</string>
     <string name="error_invalid_file">"Поддерживаются только файлы: txt, pdf, epub.</string>
-    <string name="error_invalid_data">Заполните все поля.</string>
+    <string name="error_invalid_data">Заполните поле</string>
     <string name="error_unknown_error">Что-то пошло не так: </string>
 
     <string name="msg_download_success">Книга успешно загружена!</string>

@@ -35,6 +35,7 @@ import com.example.feature.upload.ui.component.FileSelection
 import com.example.feature.upload.ui.component.UploadBottomSheet
 import com.example.feature.upload.ui.component.UploadSuccessAnimation
 import com.example.feature.upload.ui.mapper.toUiText
+import kotlinx.coroutines.flow.collectLatest
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,11 +60,11 @@ fun UploadScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
+        viewModel.effect.collectLatest { effect ->
             when(effect) {
                 is UploadEffect.OpenFilePicker -> fileLauncher.launch("*/*")
-                is UploadEffect.ShowError -> { snackBarHostState.showSnackbar(effect.error.toUiText(context.resources)) }
-                is UploadEffect.UploadSuccessToast -> {
+                is UploadEffect.ShowError -> snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
+                is UploadEffect.UploadSuccess -> {
                     showSuccess = true
                     Toast.makeText(context, context.resources.getString(R.string.msg_download_success), Toast.LENGTH_SHORT).show()
                 }
@@ -79,7 +80,9 @@ fun UploadScreen(
         },
         topBar = { BaseHeader(
             text = stringResource(R.string.title_download),
-            modifier =  Modifier.fillMaxWidth().padding(top = 30.dp))
+            modifier =  Modifier
+                .fillMaxWidth()
+                .padding(top = 30.dp))
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
@@ -90,6 +93,7 @@ fun UploadScreen(
                 .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+
             Spacer(modifier = Modifier.height(30.dp))
 
             if (showSuccess) {
@@ -105,10 +109,11 @@ fun UploadScreen(
                 Spacer(Modifier.height(20.dp))
             }
         }
-
         if (state.isBottomSheetVisible) {
             UploadBottomSheet(
                 state = state,
+                authorError = state.authorError?.toUiText(context.resources),
+                titleError = state.titleError?.toUiText(context.resources),
                 sheetState = sheetState,
                 onTitleChange = { viewModel.handleIntent(UploadIntent.TitleChanged(it)) },
                 onAuthorChange = { viewModel.handleIntent(UploadIntent.AuthorChanged(it)) },

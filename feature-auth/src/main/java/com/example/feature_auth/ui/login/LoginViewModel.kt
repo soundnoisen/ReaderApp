@@ -33,7 +33,7 @@ class LoginViewModel @Inject constructor(
     private val _state = MutableStateFlow(LoginState())
     val state: StateFlow<LoginState> = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<LoginEffect>()
+    private val _effect = MutableSharedFlow<LoginEffect>(replay = 1)
     val effect: SharedFlow<LoginEffect> = _effect.asSharedFlow()
 
     init {

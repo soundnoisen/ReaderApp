@@ -75,9 +75,7 @@ class BookReaderViewModel @Inject constructor(
     }
 
     private fun themeChanged(isDarkTheme: Boolean) {
-        viewModelScope.launch {
-            _effect.emit(BookReaderEffect.ThemeChange(isDarkTheme))
-        }
+        sendEffect(BookReaderEffect.ThemeChange(isDarkTheme))
     }
 
     private fun settingsDismisses() {
@@ -92,38 +90,40 @@ class BookReaderViewModel @Inject constructor(
         viewModelScope.launch {
             val progress = _state.value.position.fullProgress(_state.value.content)
             updateBookReadingProgress(bookId, progress)
-            _effect.emit(BookReaderEffect.NavigateBack)
+            sendEffect(BookReaderEffect.NavigateBack)
         }
     }
 
     private fun loadBook() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
+            try {
+                val book = getBookById(bookId)
+                _state.update { it.copy(title = book.title) }
 
-            val book = getBookById(bookId)
-            _state.update { it.copy(title = book.title) }
+                getBookReaderPosition(bookId)?.let { position -> _state.update { it.copy(position = position) } }
 
-            val savedPosition = getBookReaderPosition(bookId)
-            if (savedPosition != null) {
-                _state.update { it.copy(position = savedPosition) }
-            }
+                val content = book.localFilePath?.let { getBookContent(it) }
+                    ?: return@launch emitError(BookContentError.FileNotFound)
 
-            val content = book.localFilePath?.let { getBookContent(it) }
-                ?: run {
-                    _effect.emit(BookReaderEffect.ShowError(BookContentError.FileNotFound))
-                    _state.update { it.copy(isLoading = false) }
-                    return@launch
+                when (content) {
+                    is BookContent.Text -> _state.update { it.copy(content = BookContent.Text(content.content)) }
+                    is BookContent.Pdf -> _state.update { it.copy(content = BookContent.Pdf(content.path, content.pageCount, content.startPage)) }
+                    is BookContent.Error -> emitError(content.error)
                 }
-
-            when (content) {
-                is BookContent.Text -> { _state.update { it.copy(content = BookContent.Text(content.content), isLoading = false) } }
-                is BookContent.Pdf -> { _state.update { it.copy(content = BookContent.Pdf(content.path, content.pageCount, content.startPage), isLoading = false) } }
-                is BookContent.Error -> {
-                    _effect.emit(BookReaderEffect.ShowError(content.error))
-                    _state.update { it.copy(isLoading = false) }
-                }
+            } finally {
+                _state.update { it.copy(isLoading = false) }
             }
         }
     }
 
+    private fun emitError(error: BookContentError) {
+        sendEffect(BookReaderEffect.ShowError(error))
+    }
+
+    private fun sendEffect(effect: BookReaderEffect) {
+        viewModelScope.launch {
+            _effect.emit(effect)
+        }
+    }
 }

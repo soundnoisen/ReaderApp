@@ -29,13 +29,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.core.domain.model.reader.BookContent
 import com.example.core.domain.model.reader.ReaderPosition
 import com.example.core.domain.model.reader.fullProgress
-import com.example.core.ui.ThemeViewModel
 import com.example.core.ui.component.BaseSnackBar
 import com.example.feature.book.reader.ui.component.BookReaderContent
 import com.example.feature.book.reader.ui.component.BookReaderProgress
 import com.example.feature.book.reader.ui.component.BookReaderTopBar
 import com.example.feature.book.reader.ui.component.ReaderSettingsBottomSheet
 import com.example.feature.book.reader.ui.mapper.toUiText
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 
 @SuppressLint("FrequentlyChangingValue")
@@ -80,7 +80,7 @@ fun BookReaderScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
+        viewModel.effect.collectLatest { effect ->
             when (effect) {
                 is BookReaderEffect.NavigateBack -> navigateBack()
                 is BookReaderEffect.ShowError -> snackBarHostState.showSnackbar(effect.error.toUiText(content.resources))
@@ -105,9 +105,7 @@ fun BookReaderScreen(
                     onBack = { viewModel.handleIntent(BookReaderIntent.BackClicked) },
                     onSettingsClick = { viewModel.handleIntent(BookReaderIntent.SettingsClicked(it)) }
                 )
-
                 Spacer(Modifier.height(8.dp))
-
                 BookReaderProgress(
                     progress = state.position.fullProgress(state.content)
                 )
@@ -125,9 +123,7 @@ fun BookReaderScreen(
                 content = state.content,
                 state = state,
                 listState = listState,
-                onPositionChanged = { position ->
-                    viewModel.handleIntent(BookReaderIntent.UpdatePosition(position))
-                },
+                onPositionChanged = { position -> viewModel.handleIntent(BookReaderIntent.UpdatePosition(position)) },
                 modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
             )
 
@@ -146,4 +142,3 @@ fun BookReaderScreen(
         }
     }
 }
-

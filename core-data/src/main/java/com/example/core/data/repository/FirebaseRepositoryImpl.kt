@@ -1,14 +1,6 @@
 package com.example.core.data.repository
 
-import android.content.Context
-import android.util.Log
 import androidx.core.net.toUri
-import androidx.credentials.ClearCredentialStateRequest
-import androidx.credentials.Credential
-import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.source.GoogleSignInManager
@@ -18,17 +10,12 @@ import com.example.core.domain.model.auth.AuthResult
 import com.example.core.domain.model.profile.UpdateProfileError
 import com.example.core.domain.model.profile.UpdateProfileResult
 import com.example.core.domain.repository.FirebaseRepository
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
-import dagger.hilt.android.internal.Contexts
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -123,15 +110,15 @@ class FirebaseRepositoryImpl @Inject constructor(
             ?: return UpdateProfileResult.Error(UpdateProfileError.UserIsNotAuthorized)
 
         val request = userProfileChangeRequest {
-            if (!name.isNullOrBlank()) displayName = name
-            if (!photoUrl.isNullOrBlank()) photoUri = photoUrl.toUri()
+            if (name != null) displayName = name
+            if (photoUrl != null) photoUri = photoUrl.toUri()
         }
 
         return try {
             firebaseUser.updateProfile(request).await()
             UpdateProfileResult.Success(photoUrl, photoUrl?.toUri())
         } catch (e: Exception) {
-            UpdateProfileResult.Error(UpdateProfileError.Unknow(e.message.toString()))
+            UpdateProfileResult.Error(UpdateProfileError.Unknown(e.message.toString()))
         }
     }
 

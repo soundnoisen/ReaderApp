@@ -65,7 +65,7 @@ class CloudinaryRepositoryImpl @Inject constructor(
         } catch (e: IOException) {
             UpdateProfileResult.Error(UpdateProfileError.Network)
         } catch (e: Exception) {
-            UpdateProfileResult.Error(UpdateProfileError.Unknow(e.message.toString()))
+            UpdateProfileResult.Error(UpdateProfileError.Unknown(e.message.toString()))
         }
     }
 }

@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,6 +34,8 @@ import com.example.feature.profile.ui.component.ProfileName
 import com.example.feature.profile.ui.component.ProfilePhoto
 import com.example.feature.profile.ui.component.ProfileTopBar
 import com.example.feature.profile.ui.mapper.toUiText
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
@@ -43,23 +47,24 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
+    var retryUpload by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    val fileLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()) { uri ->
-        uri?.let {
-            viewModel.handleIntent(ProfileIntent.PhotoSelected(it))
-        }
+    val fileLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { viewModel.handleIntent(ProfileIntent.PhotoSelected(it)) }
     }
 
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
+        viewModel.effect.collectLatest { effect ->
             when(effect) {
                 is ProfileEffect.NavigateToLogin -> navigateToLogin()
                 is ProfileEffect.OpenFilePicker -> fileLauncher.launch("image/*")
-                is ProfileEffect.ShowError -> snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
-                is ProfileEffect.ThemeChange ->onThemeChange(effect.isDarkTheme)
-                is ProfileEffect.UploadProfileSuccessToast -> Toast.makeText(context, context.resources.getString(R.string.msg_update_success), Toast.LENGTH_SHORT).show()
+                is ProfileEffect.ShowError -> {
+                    retryUpload = effect.canRetry
+                    snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
+                }
+                is ProfileEffect.ThemeChange -> onThemeChange(effect.isDarkTheme)
+                is ProfileEffect.UploadProfileSuccess -> Toast.makeText(context, context.resources.getString(R.string.msg_update_success), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -68,6 +73,8 @@ fun ProfileScreen(
         snackbarHost = {
             BaseSnackBar(
                 snackBarHostState = snackBarHostState,
+                canRetry = retryUpload,
+                onRetry = { viewModel.handleIntent(ProfileIntent.SaveClicked) }
             )
         },
         topBar = {
@@ -120,9 +127,3 @@ fun ProfileScreen(
         }
     }
 }
-
-
-
-
-
-

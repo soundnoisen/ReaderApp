@@ -12,5 +12,6 @@ sealed class UpdateProfileError {
     object InvalidFile: UpdateProfileError()
     object Network: UpdateProfileError()
     object FailedToGetImage: UpdateProfileError()
-    data class Unknow(val error: String): UpdateProfileError()
+    object NoChanges: UpdateProfileError()
+    data class Unknown(val error: String): UpdateProfileError()
 }

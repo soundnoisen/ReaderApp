@@ -10,6 +10,7 @@ import com.example.feature.profile.domain.usecase.LogoutProfileUseCase
 import com.example.feature.profile.domain.usecase.ObserveProfileUseCase
 import com.example.feature.profile.domain.usecase.UpdateProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -38,6 +39,8 @@ class ProfileViewModel  @Inject constructor(
     private val _effect = MutableSharedFlow<ProfileEffect>()
     val effect: SharedFlow<ProfileEffect> = _effect.asSharedFlow()
 
+    private var uploadJob: Job? = null
+
     init {
         loadProfile()
     }
@@ -61,41 +64,49 @@ class ProfileViewModel  @Inject constructor(
         val name = _state.value.editName
         val uri = _state.value.editPhotoUri
 
-        if (!networkChecker.isNetworkAvailable()) {
-            emitError(UpdateProfileError.Network, canRetry = true)
-            return
-        }
+        if (name == null && uri == null)
+            return emitError(UpdateProfileError.NoChanges)
 
-        viewModelScope.launch {
+        if (!networkChecker.isNetworkAvailable())
+            return emitError(UpdateProfileError.Network, canRetry = true)
+
+        uploadJob?.cancel()
+        uploadJob = viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             try {
-                updateProfile.invoke(name, uri).let { result ->
-                    when (result) {
-                        is UpdateProfileResult.Error -> emitError(result.error)
-                        is UpdateProfileResult.Success -> {
-                            _state.update { current ->
-                                var updated = current
-                                if (!name.isNullOrBlank()) {
-                                    updated = updated.copy(name = name)
-                                }
-                                result.uri?.let { updated = updated.copy(photoUri = it) }
-                                updated
-                            }
-                            _effect.emit(ProfileEffect.UploadProfileSuccessToast)
-                        }
-                    }
-                }
+                handleUpdateResult(updateProfile(name, uri), name)
             } finally {
-                _state.update { it.copy(isLoading = false, isEditVisible = false, editName = null, editPhotoUri = null) }
+                _state.update { it.copy(isLoading = false) }
             }
         }
     }
 
+    private fun handleUpdateResult(result: UpdateProfileResult, name: String?) {
+        when (result) {
+            is UpdateProfileResult.Error -> emitError(result.error)
+            is UpdateProfileResult.Success -> {
+                applyProfileChanges(name, result.uri)
+                sendEffect(ProfileEffect.UploadProfileSuccess)
+            }
+        }
+    }
+
+    private fun applyProfileChanges(name: String?, uri: Uri?) {
+        _state.update {
+            it.copy(
+                name = name ?: it.name,
+                photoUri = uri ?: it.photoUri,
+                editName = null,
+                editPhotoUri = null,
+                isEditVisible = false
+            )
+        }
+    }
 
     private fun loadProfile() {
         observeProfile()
             .catch { e ->
-                emitError(UpdateProfileError.Unknow(e.message.toString()))
+                emitError(UpdateProfileError.Unknown(e.message.toString()))
             }
             .onEach { user ->
                 user?.let {
@@ -112,9 +123,7 @@ class ProfileViewModel  @Inject constructor(
     }
 
     private fun themeChanged(isDarkTheme: Boolean) {
-        viewModelScope.launch {
-            _effect.emit(ProfileEffect.ThemeChange(isDarkTheme))
-        }
+        sendEffect(ProfileEffect.ThemeChange(isDarkTheme))
     }
 
     private fun logoutDismissed() {
@@ -123,9 +132,9 @@ class ProfileViewModel  @Inject constructor(
 
     private fun logoutConfirmed() {
         viewModelScope.launch {
-            logoutProfile.invoke()
+            logoutProfile()
             _state.update { it.copy(isLogoutDialogVisible = false) }
-            _effect.emit(ProfileEffect.NavigateToLogin)
+            sendEffect(ProfileEffect.NavigateToLogin)
         }
     }
 
@@ -136,11 +145,11 @@ class ProfileViewModel  @Inject constructor(
     }
 
     private fun logoutClicked() {
-        _state.update { it.copy(isLogoutDialogVisible = !it.isLogoutDialogVisible) }
+        _state.update { it.copy(isLogoutDialogVisible = true) }
     }
 
     private fun editClicked() {
-        _state.update { it.copy(isEditVisible = !it.isEditVisible) }
+        _state.update { it.copy(isEditVisible = true) }
     }
 
     private fun photoSelected(uri: Uri) {
@@ -148,9 +157,7 @@ class ProfileViewModel  @Inject constructor(
     }
 
     private fun selectPhotoClicked() {
-        viewModelScope.launch {
-            _effect.emit(ProfileEffect.OpenFilePicker)
-        }
+        sendEffect(ProfileEffect.OpenFilePicker)
     }
 
     private fun nameChanged(name: String) {
@@ -158,8 +165,12 @@ class ProfileViewModel  @Inject constructor(
     }
 
     private fun emitError(error: UpdateProfileError, canRetry: Boolean = false) {
+        sendEffect(ProfileEffect.ShowError(error, canRetry))
+    }
+
+    private fun sendEffect(effect: ProfileEffect) {
         viewModelScope.launch {
-            _effect.emit(ProfileEffect.ShowError(error, canRetry))
+            _effect.emit(effect)
         }
     }
 }

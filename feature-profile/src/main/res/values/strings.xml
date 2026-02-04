@@ -15,6 +15,8 @@
     <string name="error_no_network">Ошибка сети. Попробуйте снова</string>
     <string name="error_failed_to_get_image">Не удалось получить изображение</string>
     <string name="error_unknown_error">Что-то пошло не так: </string>
+    <string name="error_no_changes_to_save">Нет изменений для сохранения</string>
+
 
     <string name="msg_update_success">Данные успешно обновлены!</string>
     <string name="msg_logout_confirmation">Вы уверены, что хотите выйти из аккаунта?</string>

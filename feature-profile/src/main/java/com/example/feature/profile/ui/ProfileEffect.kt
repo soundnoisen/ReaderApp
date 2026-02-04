@@ -7,5 +7,5 @@ sealed class ProfileEffect {
     object NavigateToLogin: ProfileEffect()
     data class ShowError(val error: UpdateProfileError, val canRetry: Boolean = false): ProfileEffect()
     data class ThemeChange(val isDarkTheme: Boolean): ProfileEffect()
-    object UploadProfileSuccessToast: ProfileEffect()
+    object UploadProfileSuccess: ProfileEffect()
 }

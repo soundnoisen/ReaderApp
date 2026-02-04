@@ -66,7 +66,6 @@ class UploadViewModel @Inject constructor(
     }
 
     private fun fileSelect(fileUri: Uri, fileName: String) {
-
         validator.validExtension(fileName)?.let {
             return emitError(it)
         }
@@ -81,16 +80,15 @@ class UploadViewModel @Inject constructor(
     }
 
     private fun upload() {
-        val state = _state.value
+        validateForm()?.let { return emitError(it) }
 
-        if (state.uri == null || state.authorError != null || state.titleError != null)
-            return emitError(UploadError.InvalidData)
+        val state = _state.value
 
         if (!networkChecker.isNetworkAvailable()) return emitError(UploadError.Network)
 
         uploadJob?.cancel()
         uploadJob = viewModelScope.launch {
-            upload(state.uri,state.title, state.author).collect { progress ->
+            upload(state.uri!!,state.title, state.author).collect { progress ->
                 _state.update { it.copy(progress = progress) }
                 when (progress) {
                     is UploadProgress.Success -> {
@@ -102,6 +100,22 @@ class UploadViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun validateForm(): UploadError? {
+        val state = _state.value
+
+        if (state.uri == null) return UploadError.InvalidFile
+
+        val titleError = validator.validateField(state.title)
+        val authorError = validator.validateField(state.author)
+
+        _state.update { it.copy(titleError = titleError, authorError = authorError) }
+
+        if (titleError != null || authorError != null)
+            return UploadError.InvalidData
+
+        return null
     }
 
     private fun emitError(error: UploadError) {

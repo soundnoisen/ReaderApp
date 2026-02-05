@@ -22,22 +22,27 @@ import okhttp3.Response
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.util.UUID
 import javax.inject.Inject
 
 class YandexStorageRepositoryImpl @Inject constructor(
     private val client: OkHttpClient,
     @Named("yandexIamToken") private val token: String,
+    @Named("yandexBaseUrl") private val baseUrl: String,
+    @Named("yandexBucket") private val bucket: String
 ): YandexStorageRepository {
 
-    override fun uploadFile(file: File, bucket: String, objectKey: String): Flow<UploadProgress> =
+    override fun uploadFile(file: File, objectKey: String): Flow<UploadProgress> =
         callbackFlow {
+
+            val url = "$baseUrl/$bucket/$objectKey"
 
             val requestBody = ProgressRequestBody(file) { percent ->
                 trySend(UploadProgress.Uploading(percent)).isSuccess
             }
 
             val request = Request.Builder()
-                .url("https://storage.yandexcloud.net/$bucket/$objectKey")
+                .url(url)
                 .put(requestBody)
                 .addHeader("Authorization", "Bearer $token")
                 .build()
@@ -54,16 +59,14 @@ class YandexStorageRepositoryImpl @Inject constructor(
                 override fun onResponse(call: Call, response: Response) {
                     response.use {
                         if (it.isSuccessful) {
-                            val url = "https://storage.yandexcloud.net/$bucket/$objectKey"
                             trySend(UploadProgress.Success(url))
                         } else {
-                            trySend(UploadProgress.Error(UploadError.Unknown(it.message)))
+                            trySend(UploadProgress.Error(UploadError.Unknown))
                         }
                         channel.close()
                     }
                 }
             })
-
             awaitClose { call.cancel() }
         }
 

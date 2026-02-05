@@ -11,5 +11,5 @@ sealed class UploadError {
     object Network: UploadError()
     object InvalidFile: UploadError()
     object InvalidData: UploadError()
-    data class Unknown(val error: String): UploadError()
+    object Unknown: UploadError()
 }

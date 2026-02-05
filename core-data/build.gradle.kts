@@ -30,6 +30,18 @@ android {
 
         buildConfigField(
             "String",
+            "YANDEX_BUCKET",
+            "\"${project.properties["YANDEX_BUCKET"]}\""
+        )
+
+        buildConfigField(
+            "String",
+            "YANDEX_BASE_URL",
+            "\"${project.properties["YANDEX_BASE_URL"]}\""
+        )
+
+        buildConfigField(
+            "String",
             "CLOUDINARY_CLOUD_NAME",
             "\"${project.properties["CLOUDINARY_CLOUD_NAME"]}\""
         )
@@ -81,6 +93,9 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.work)
+    kapt(libs.androidx.hilt.compiler)
+    implementation(libs.androidx.work.runtime.ktx)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

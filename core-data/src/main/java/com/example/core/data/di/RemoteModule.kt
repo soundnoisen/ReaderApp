@@ -23,6 +23,14 @@ object RemoteModule {
     fun provideYandexIamToken(): String = BuildConfig.YANDEX_IAM_TOKEN
 
     @Provides
+    @Named("yandexBucket")
+    fun provideYandexBucket(): String = BuildConfig.YANDEX_BUCKET
+
+    @Provides
+    @Named("yandexBaseUrl")
+    fun provideYandexBaseUrl(): String = BuildConfig.YANDEX_BASE_URL
+
+    @Provides
     @Named("cloudinaryCloudName")
     fun provideCloudinaryCloudName(): String = BuildConfig.CLOUDINARY_CLOUD_NAME
 

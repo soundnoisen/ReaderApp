@@ -9,5 +9,5 @@ import java.io.File
 interface YandexStorageRepository {
     suspend fun deleteFile(fileUrl: String): DeleteResult
     fun downloadFile(fileUrl: String, destinationFile: File): Flow<DownloadProgress>
-    fun uploadFile(file: File, bucket: String, objectKey: String): Flow<UploadProgress>
+    fun uploadFile(file: File, objectKey: String): Flow<UploadProgress>
 }

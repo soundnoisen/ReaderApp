@@ -1,6 +1,6 @@
 package com.example.feature.upload.data.di
 
-import com.example.feature.upload.data.repository.UploadRepositoryImpl
+import com.example.feature.upload.data.repository.UploadBookWorkManager
 import com.example.feature.upload.domain.repository.UploadRepository
 import dagger.Binds
 import dagger.Module
@@ -12,5 +12,5 @@ import dagger.hilt.components.SingletonComponent
 abstract class UploadModule {
 
     @Binds
-    abstract fun bindUploadRepository(impl: UploadRepositoryImpl): UploadRepository
+    abstract fun bindUploadRepository(impl: UploadBookWorkManager): UploadRepository
 }

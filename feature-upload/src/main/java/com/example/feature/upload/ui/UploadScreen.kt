@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.core.domain.model.book.UploadProgress
 import com.example.core.ui.component.BaseHeader
 import com.example.core.ui.component.BaseSnackBar
 import com.example.feature.upload.R
@@ -50,9 +51,7 @@ fun UploadScreen(
     val context = LocalContext.current
     var showSuccess by remember { mutableStateOf(false) }
 
-    val fileLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
+    val fileLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             val fileName = queryFileName(context, it)
             viewModel.handleIntent(UploadIntent.FileSelected(it, fileName))
@@ -103,7 +102,8 @@ fun UploadScreen(
                 )
             } else {
                 FileSelection(
-                    uploading = state.isBottomSheetVisible,
+                    uploading = state.progress is UploadProgress.Uploading,
+                    progressPercent = (state.progress as? UploadProgress.Uploading)?.percent?.toFloat() ?: 0f,
                     onClick = { viewModel.handleIntent(UploadIntent.SelectFile) }
                 )
                 Spacer(Modifier.height(20.dp))

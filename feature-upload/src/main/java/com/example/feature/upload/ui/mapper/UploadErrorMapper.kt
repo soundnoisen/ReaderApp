@@ -9,6 +9,6 @@ fun UploadError.toUiText(resources: Resources): String {
         is UploadError.Network -> resources.getString(R.string.error_network)
         is UploadError.InvalidFile -> resources.getString(R.string.error_invalid_file)
         is UploadError.InvalidData -> resources.getString(R.string.error_invalid_data)
-        is UploadError.Unknown -> resources.getString(R.string.error_unknown_error) + error
+        is UploadError.Unknown -> resources.getString(R.string.error_unknown_error)
     }
 }

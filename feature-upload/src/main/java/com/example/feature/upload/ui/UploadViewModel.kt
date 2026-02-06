@@ -84,10 +84,12 @@ class UploadViewModel @Inject constructor(
 
         val state = _state.value
 
-        if (!networkChecker.isNetworkAvailable()) return emitError(UploadError.Network)
+        if (!networkChecker.isNetworkAvailable())
+            return emitError(UploadError.Network)
 
         uploadJob?.cancel()
         uploadJob = viewModelScope.launch {
+            _state.update { it.copy(isBottomSheetVisible = false) }
             upload(state.uri!!,state.title, state.author).collect { progress ->
                 _state.update { it.copy(progress = progress) }
                 when (progress) {
@@ -95,7 +97,10 @@ class UploadViewModel @Inject constructor(
                         clear()
                         sendEffect(UploadEffect.UploadSuccess)
                     }
-                    is UploadProgress.Error -> emitError(progress.error)
+                    is UploadProgress.Error -> {
+                        _state.update { it.copy(isBottomSheetVisible = true) }
+                        emitError(progress.error)
+                    }
                     else -> Unit
                 }
             }

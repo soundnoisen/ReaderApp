@@ -15,14 +15,14 @@ import com.example.core.domain.model.book.UploadError
 import com.example.core.domain.model.book.UploadProgress
 import com.example.feature.upload.data.util.copyToCache
 import com.example.feature.upload.data.util.generateObjectKey
-import com.example.feature.upload.data.worker.UploadWorkerKeys
+import com.example.feature.upload.data.worker.UploadBookWorkerKeys
 import com.example.feature.upload.domain.repository.UploadRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class UploadBookWorkManager @Inject constructor(
+class UploadRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ): UploadRepository {
 
@@ -32,11 +32,11 @@ class UploadBookWorkManager @Inject constructor(
         val objectKey = generateObjectKey(file)
 
         val data = workDataOf(
-            UploadWorkerKeys.FILE_PATH to file.absolutePath,
-            UploadWorkerKeys.COVER_PATH to coverPath,
-            UploadWorkerKeys.OBJECT_KEY to objectKey,
-            UploadWorkerKeys.TITLE to title,
-            UploadWorkerKeys.AUTHOR to author
+            UploadBookWorkerKeys.FILE_PATH to file.absolutePath,
+            UploadBookWorkerKeys.COVER_PATH to coverPath,
+            UploadBookWorkerKeys.OBJECT_KEY to objectKey,
+            UploadBookWorkerKeys.TITLE to title,
+            UploadBookWorkerKeys.AUTHOR to author
         )
 
         val request = OneTimeWorkRequestBuilder<UploadBookWorker>()

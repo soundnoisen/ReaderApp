@@ -19,17 +19,17 @@ import java.util.UUID
 class UploadBookWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val repository: YandexStorageRepository,
+    private val storage: YandexStorageRepository,
     private val localDataSource: BookLocalDataSource,
     private val firebaseRepository: FirebaseRepository
 ): CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val filePath = inputData.getString(UploadWorkerKeys.FILE_PATH) ?: return Result.failure()
-        val coverPath = inputData.getString(UploadWorkerKeys.COVER_PATH)
-        val objectKey = inputData.getString(UploadWorkerKeys.OBJECT_KEY) ?: return Result.failure()
-        val title = inputData.getString(UploadWorkerKeys.TITLE) ?: return Result.failure()
-        val author = inputData.getString(UploadWorkerKeys.AUTHOR) ?: return Result.failure()
+        val filePath = inputData.getString(UploadBookWorkerKeys.FILE_PATH) ?: return Result.failure()
+        val coverPath = inputData.getString(UploadBookWorkerKeys.COVER_PATH)
+        val objectKey = inputData.getString(UploadBookWorkerKeys.OBJECT_KEY) ?: return Result.failure()
+        val title = inputData.getString(UploadBookWorkerKeys.TITLE) ?: return Result.failure()
+        val author = inputData.getString(UploadBookWorkerKeys.AUTHOR) ?: return Result.failure()
 
         val file = File(filePath)
         if (!file.exists()) return Result.failure()
@@ -37,13 +37,16 @@ class UploadBookWorker @AssistedInject constructor(
         try {
             var uploadedUrl: String? = null
 
-            repository.uploadFile(file, objectKey).collect { progress ->
+            storage.uploadFile(file, objectKey).collect { progress ->
                 when (progress) {
                     is UploadProgress.Uploading -> setProgress(workDataOf("progress" to progress.percent))
                     is UploadProgress.Success -> uploadedUrl = progress.url
+                    is UploadProgress.Error -> throw RuntimeException(progress.error.toString())
                     else -> Unit
                 }
             }
+
+            if (uploadedUrl == null) return Result.failure()
 
             localDataSource.insert(
                 uid = firebaseRepository.requireCurrentUserId(),
@@ -51,7 +54,7 @@ class UploadBookWorker @AssistedInject constructor(
                     id = UUID.randomUUID().toString(),
                     title = title,
                     author = author,
-                    fileUrl = uploadedUrl!!,
+                    fileUrl = uploadedUrl,
                     localFilePath = file.absolutePath,
                     coverPath = coverPath,
                     readingProgress = 0f,

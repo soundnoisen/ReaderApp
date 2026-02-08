@@ -26,11 +26,11 @@ class UploadBookWorker @AssistedInject constructor(
 ): BaseFileWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val filePath = inputData.getString(UploadBookWorkerKeys.FILE_PATH) ?: return Result.failure()
-        val coverPath = inputData.getString(UploadBookWorkerKeys.COVER_PATH)
-        val objectKey = inputData.getString(UploadBookWorkerKeys.OBJECT_KEY) ?: return Result.failure()
-        val title = inputData.getString(UploadBookWorkerKeys.TITLE) ?: return Result.failure()
-        val author = inputData.getString(UploadBookWorkerKeys.AUTHOR) ?: return Result.failure()
+        val filePath = inputData.getString(FILE_PATH) ?: return Result.failure()
+        val coverPath = inputData.getString(COVER_PATH)
+        val objectKey = inputData.getString(OBJECT_KEY) ?: return Result.failure()
+        val title = inputData.getString(TITLE) ?: return Result.failure()
+        val author = inputData.getString(AUTHOR) ?: return Result.failure()
 
         val foregroundId = objectKey.hashCode()
         val resultId = "${objectKey}_result".hashCode()
@@ -79,5 +79,13 @@ class UploadBookWorker @AssistedInject constructor(
             notifyComplete(resultId, title, false)
             return Result.retry()
         }
+    }
+
+    companion object {
+        const val FILE_PATH = "file_path"
+        const val COVER_PATH = "cover_path"
+        const val OBJECT_KEY = "object_key"
+        const val TITLE = "title"
+        const val AUTHOR = "author"
     }
 }

@@ -24,11 +24,11 @@ class DownloadBookWorker @AssistedInject constructor(
 ): BaseFileWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val id = inputData.getString(DownloadBookWorkerKeys.ID) ?: return Result.failure()
-        val title = inputData.getString(DownloadBookWorkerKeys.TITLE) ?: return Result.failure()
-        val extension = inputData.getString(DownloadBookWorkerKeys.EXTENSION) ?: return Result.failure()
-        val url = inputData.getString(DownloadBookWorkerKeys.URL) ?: return Result.failure()
-        val readingProgress = inputData.getFloat(DownloadBookWorkerKeys.READING_PROGRESS, 0f)
+        val id = inputData.getString(ID) ?: return Result.failure()
+        val title = inputData.getString(TITLE) ?: return Result.failure()
+        val extension = inputData.getString(EXTENSION) ?: return Result.failure()
+        val url = inputData.getString(URL) ?: return Result.failure()
+        val readingProgress = inputData.getFloat(READING_PROGRESS, 0f)
 
         val foregroundId = id.hashCode()
         val resultId = "${id}_result".hashCode()
@@ -73,5 +73,13 @@ class DownloadBookWorker @AssistedInject constructor(
             notifyComplete(resultId, title, false)
             return Result.retry()
         }
+    }
+
+    companion object {
+        const val ID = "id"
+        const val TITLE = "title"
+        const val EXTENSION = "extension"
+        const val URL = "url"
+        const val READING_PROGRESS = "reading_progress"
     }
 }

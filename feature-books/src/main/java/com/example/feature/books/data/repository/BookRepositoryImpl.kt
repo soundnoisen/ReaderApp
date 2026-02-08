@@ -18,7 +18,6 @@ import com.example.core.domain.repository.FirebaseRepository
 import com.example.core.domain.repository.ReaderPositionRepository
 import com.example.core.domain.repository.YandexStorageRepository
 import com.example.feature.books.data.worker.DownloadBookWorker
-import com.example.feature.books.data.worker.DownloadBookWorkerKeys
 import com.example.feature.books.domain.repository.BookRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
@@ -70,11 +69,11 @@ class BookRepositoryImpl @Inject constructor(
         val extension = book.fileUrl.substringAfterLast('.', "dat")
 
         val data = workDataOf(
-            DownloadBookWorkerKeys.ID to book.id,
-            DownloadBookWorkerKeys.TITLE to book.title,
-            DownloadBookWorkerKeys.EXTENSION to extension,
-            DownloadBookWorkerKeys.URL to book.fileUrl,
-            DownloadBookWorkerKeys.READING_PROGRESS to book.readingProgress
+            DownloadBookWorker.ID to book.id,
+            DownloadBookWorker.TITLE to book.title,
+            DownloadBookWorker.EXTENSION to extension,
+            DownloadBookWorker.URL to book.fileUrl,
+            DownloadBookWorker.READING_PROGRESS to book.readingProgress
         )
 
         val request = OneTimeWorkRequestBuilder<DownloadBookWorker>()

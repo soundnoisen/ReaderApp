@@ -87,6 +87,8 @@ class UploadViewModel @Inject constructor(
         if (!networkChecker.isNetworkAvailable())
             return emitError(UploadError.Network)
 
+        sendEffect(UploadEffect.RequestNotificationPermission)
+
         uploadJob?.cancel()
         uploadJob = viewModelScope.launch {
             _state.update { it.copy(isBottomSheetVisible = false) }

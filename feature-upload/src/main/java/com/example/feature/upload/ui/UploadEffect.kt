@@ -6,4 +6,5 @@ sealed class UploadEffect {
     object OpenFilePicker: UploadEffect()
     data class ShowError(val error: UploadError): UploadEffect()
     object UploadSuccess: UploadEffect()
+    object RequestNotificationPermission: UploadEffect()
 }

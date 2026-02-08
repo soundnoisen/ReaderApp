@@ -30,6 +30,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.core.domain.model.book.UploadProgress
 import com.example.core.ui.component.BaseHeader
 import com.example.core.ui.component.BaseSnackBar
+import com.example.core.ui.util.NotificationPermissionRequester
 import com.example.feature.upload.R
 import com.example.feature.upload.data.util.queryFileName
 import com.example.feature.upload.ui.component.FileSelection
@@ -58,6 +59,8 @@ fun UploadScreen(
         }
     }
 
+    val requestNotificationPermission = NotificationPermissionRequester()
+
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when(effect) {
@@ -67,6 +70,7 @@ fun UploadScreen(
                     showSuccess = true
                     Toast.makeText(context, context.resources.getString(R.string.msg_download_success), Toast.LENGTH_SHORT).show()
                 }
+                is UploadEffect.RequestNotificationPermission -> requestNotificationPermission()
             }
         }
     }

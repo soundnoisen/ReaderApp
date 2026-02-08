@@ -2,10 +2,11 @@ package com.example.feature.upload.data.worker
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
-import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.core.data.source.BookLocalDataSource
+import com.example.core.data.util.NotificationUtils
+import com.example.core.data.worker.BaseFileWorker
 import com.example.core.domain.model.Book
 import com.example.core.domain.model.book.UploadProgress
 import com.example.core.domain.repository.FirebaseRepository
@@ -22,7 +23,7 @@ class UploadBookWorker @AssistedInject constructor(
     private val storage: YandexStorageRepository,
     private val localDataSource: BookLocalDataSource,
     private val firebaseRepository: FirebaseRepository
-): CoroutineWorker(context, params) {
+): BaseFileWorker(context, params) {
 
     override suspend fun doWork(): Result {
         val filePath = inputData.getString(UploadBookWorkerKeys.FILE_PATH) ?: return Result.failure()
@@ -30,6 +31,11 @@ class UploadBookWorker @AssistedInject constructor(
         val objectKey = inputData.getString(UploadBookWorkerKeys.OBJECT_KEY) ?: return Result.failure()
         val title = inputData.getString(UploadBookWorkerKeys.TITLE) ?: return Result.failure()
         val author = inputData.getString(UploadBookWorkerKeys.AUTHOR) ?: return Result.failure()
+
+        val foregroundId = objectKey.hashCode()
+        val resultId = "${objectKey}_result".hashCode()
+
+        setForeground(createForegroundInfo(foregroundId, title))
 
         val file = File(filePath)
         if (!file.exists()) return Result.failure()
@@ -39,14 +45,20 @@ class UploadBookWorker @AssistedInject constructor(
 
             storage.uploadFile(file, objectKey).collect { progress ->
                 when (progress) {
-                    is UploadProgress.Uploading -> setProgress(workDataOf("progress" to progress.percent))
+                    is UploadProgress.Uploading -> {
+                        setProgress(workDataOf("progress" to progress.percent))
+                        notificationManager.notify(foregroundId, NotificationUtils.buildProgressNotification(applicationContext, "Загрузка «$title» ", progress.percent))
+                    }
                     is UploadProgress.Success -> uploadedUrl = progress.url
                     is UploadProgress.Error -> throw RuntimeException(progress.error.toString())
                     else -> Unit
                 }
             }
 
-            if (uploadedUrl == null) return Result.failure()
+            if (uploadedUrl == null) {
+                notifyComplete(resultId, title, false)
+                return Result.failure()
+            }
 
             localDataSource.insert(
                 uid = firebaseRepository.requireCurrentUserId(),
@@ -61,8 +73,10 @@ class UploadBookWorker @AssistedInject constructor(
                 )
             )
 
+            notifyComplete(resultId, title, true)
             return Result.success(workDataOf("url" to uploadedUrl))
         } catch (e: Exception) {
+            notifyComplete(resultId, title, false)
             return Result.retry()
         }
     }

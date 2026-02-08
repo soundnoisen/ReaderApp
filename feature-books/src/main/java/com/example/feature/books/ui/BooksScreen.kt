@@ -32,6 +32,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.core.ui.component.BaseHeader
 import com.example.core.ui.component.BaseSnackBar
 import com.example.core.ui.component.ReaderIcon
+import com.example.core.ui.util.NotificationPermissionRequester
 import com.example.feature.books.R
 import com.example.feature.books.ui.component.BooksList
 import com.example.feature.books.ui.component.DeleteAlertDialog
@@ -52,6 +53,8 @@ fun BooksScreen(
     val pullRefreshState = rememberPullToRefreshState()
     val context = LocalContext.current
 
+    val requestNotificationPermission = NotificationPermissionRequester()
+
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when(effect) {
@@ -63,6 +66,7 @@ fun BooksScreen(
                     retryLogin = effect.canRetry
                     snackBarHostState.showSnackbar(effect.error.toUiText(context.resources))
                 }
+                is BooksEffect.RequestNotificationPermission -> requestNotificationPermission()
             }
         }
     }

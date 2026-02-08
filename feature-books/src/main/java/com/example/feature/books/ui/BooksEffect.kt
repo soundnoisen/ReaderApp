@@ -10,4 +10,5 @@ sealed class BooksEffect {
     data class ShowDeleteError(val error: DeleteError): BooksEffect()
     object DownloadBookSuccessToast: BooksEffect()
     object DeleteBookSuccessToast: BooksEffect()
+    object RequestNotificationPermission: BooksEffect()
 }

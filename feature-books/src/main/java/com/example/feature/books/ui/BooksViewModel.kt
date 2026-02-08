@@ -146,6 +146,8 @@ class BooksViewModel @Inject constructor(
         if (!networkChecker.isNetworkAvailable())
             return emitDownloadError(DownloadError.Network, true)
 
+        sendEffect(BooksEffect.RequestNotificationPermission)
+
         viewModelScope.launch {
             downloadBook(book).collect { progress ->
                 updateBookState(book.id) { it.copy(downloadProgress = progress) }

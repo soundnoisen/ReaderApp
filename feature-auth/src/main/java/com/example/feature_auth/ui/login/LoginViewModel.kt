@@ -1,6 +1,5 @@
 package com.example.feature_auth.ui.login
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.domain.model.auth.AuthError
@@ -33,7 +32,7 @@ class LoginViewModel @Inject constructor(
     private val _state = MutableStateFlow(LoginState())
     val state: StateFlow<LoginState> = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<LoginEffect>(replay = 1)
+    private val _effect = MutableSharedFlow<LoginEffect>()
     val effect: SharedFlow<LoginEffect> = _effect.asSharedFlow()
 
     init {
@@ -92,7 +91,7 @@ class LoginViewModel @Inject constructor(
             setLoading(true)
             try {
                 when(val result = setLoginType()) {
-                    is AuthResult.Success -> sendEffect(LoginEffect.NavigateToMain)
+                    is AuthResult.Success -> _state.update { it.copy(isLoggedIn = true) }
                     is AuthResult.Error -> emitError(result.error)
                 }
             } finally {
@@ -119,7 +118,9 @@ class LoginViewModel @Inject constructor(
 
     private fun checkAutoLogin() {
         viewModelScope.launch {
-            if (getCurrentUser() != null) sendEffect(LoginEffect.NavigateToMain)
+            if (getCurrentUser() != null) {
+                _state.update { it.copy(isLoggedIn = true) }
+            }
         }
     }
 }

@@ -44,10 +44,13 @@ fun LoginScreen(
     val snackBarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
+    LaunchedEffect(state.isLoggedIn) {
+        if (state.isLoggedIn) onNavigateToMain()
+    }
+
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when (effect) {
-                is LoginEffect.NavigateToMain -> onNavigateToMain()
                 is LoginEffect.NavigateToRegister -> onNavigateToRegister()
                 is LoginEffect.ShowError -> {
                     retryLogin = effect.canRetry

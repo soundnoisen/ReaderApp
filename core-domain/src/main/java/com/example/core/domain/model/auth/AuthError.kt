@@ -7,6 +7,7 @@ sealed class AuthError {
     object CredentialsNotFound: AuthError()
     object NotValidEmail: AuthError()
     object NotValidPassword: AuthError()
+    object FieldsIsBlank: AuthError()
     object DifferentPasswords: AuthError()
     object UserAlreadyExist : AuthError()
 }

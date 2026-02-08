@@ -8,7 +8,6 @@ import com.example.core.domain.repository.NetworkCheckerRepository
 import com.example.feature_auth.domain.repository.GetCurrentUserUseCase
 import com.example.feature_auth.domain.repository.SignInUseCase
 import com.example.feature_auth.domain.repository.SignInWithGoogleUseCase
-import com.example.feature_auth.domain.validator.CredentialsValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +24,6 @@ class LoginViewModel @Inject constructor(
     private val signIn: SignInUseCase,
     private val signInWithGoogle: SignInWithGoogleUseCase,
     private val getCurrentUser: GetCurrentUserUseCase,
-    private val validator: CredentialsValidator,
     private val networkChecker: NetworkCheckerRepository
 ): ViewModel() {
 
@@ -54,13 +52,11 @@ class LoginViewModel @Inject constructor(
     }
 
     fun onEmailChange(email: String) {
-        val error = if (email.isNotBlank()) validator.email(email) else null
-        _state.update { it.copy(email = email, emailError = error) }
+        _state.update { it.copy(email = email) }
     }
 
     fun onPasswordChange(password: String) {
-        val error = if (password.isNotBlank()) validator.password(password) else null
-        _state.update { it.copy(password = password, passwordError = error)}
+        _state.update { it.copy(password = password)}
     }
 
     private fun login() {
@@ -102,8 +98,10 @@ class LoginViewModel @Inject constructor(
 
     private fun validateInputs(): AuthError? {
         val state = _state.value
-        return validator.email(state.email)
-            ?: validator.password(state.password)
+        if (state.email.isBlank() || state.password.isBlank()) {
+            return AuthError.FieldsIsBlank
+        }
+        return null
     }
 
     private fun emitError(error: AuthError, canRetry: Boolean = false) {

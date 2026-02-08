@@ -13,9 +13,7 @@ import com.example.feature_auth.R
 @Composable
 fun LoginForm(
     email: String,
-    emailError: String? = null,
     password: String,
-    passwordError: String? = null,
     enabled: Boolean = true,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -27,19 +25,11 @@ fun LoginForm(
             onValueChange = onEmailChange,
             placeholder = stringResource(R.string.placeholder_email)
         )
-        BaseErrorText(
-            visibility = !emailError.isNullOrEmpty(),
-            text = emailError.orEmpty()
-        )
         BasePasswordTextField(
             value = password,
             enabled = enabled,
             onValueChange = onPasswordChange,
             placeholder = stringResource(R.string.placeholder_password)
-        )
-        BaseErrorText(
-            visibility = !passwordError.isNullOrEmpty(),
-            text = passwordError.orEmpty()
         )
     }
 }

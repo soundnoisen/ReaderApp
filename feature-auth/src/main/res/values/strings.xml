@@ -29,4 +29,6 @@
     <string name="error_different_passwords">Пароли не совпадают</string>
     <string name="error_user_already_exists">Пользователь уже зарегистрирован</string>
     <string name="error_credentials_not_found">Учетные данные не найдены</string>
+    <string name="error_fields_is_blank">Необходимо заполнить все поля</string>
+
 </resources>

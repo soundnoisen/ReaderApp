@@ -89,9 +89,7 @@ fun LoginScreen(
 
             LoginForm(
                 email = state.email,
-                emailError = state.emailError?.toUiText(context.resources),
                 password = state.password,
-                passwordError = state.passwordError?.toUiText(context.resources),
                 enabled = !state.isLoading,
                 onEmailChange = {
                     viewModel.handleIntent(LoginIntent.EmailChanged(it))

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_upload_complete">Загрузка завершена.</string>
+    <string name="notification_upload_failed">Ошибка. Загрузка отменена.</string>
+    <string name="notification_title">Книга:</string>
+</resources>

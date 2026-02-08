@@ -22,7 +22,6 @@ import okhttp3.Response
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.util.UUID
 import javax.inject.Inject
 
 class YandexStorageRepositoryImpl @Inject constructor(
@@ -91,7 +90,7 @@ class YandexStorageRepositoryImpl @Inject constructor(
                 override fun onResponse(call: Call, response: Response) {
                     response.use {
                         if (!it.isSuccessful) {
-                            trySend(DownloadProgress.Error(DownloadError.Unknown(it.message)))
+                            trySend(DownloadProgress.Error(DownloadError.Unknown))
                             channel.close()
                             return
                         }
@@ -108,7 +107,7 @@ class YandexStorageRepositoryImpl @Inject constructor(
                             }
                             trySend(DownloadProgress.Success)
                         } catch (e: Exception) {
-                            trySend(DownloadProgress.Error(DownloadError.Unknown(e.message.toString())))
+                            trySend(DownloadProgress.Error(DownloadError.Unknown))
                         } finally {
                             channel.close()
                         }

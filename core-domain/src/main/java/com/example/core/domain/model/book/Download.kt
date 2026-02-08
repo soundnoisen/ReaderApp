@@ -11,5 +11,5 @@ sealed class DownloadError {
     object Network: DownloadError()
     object FileNotFound: DownloadError()
     object CoverGenerationFailed: DownloadError()
-    data class Unknown(val error: String): DownloadError()
+    object Unknown: DownloadError()
 }

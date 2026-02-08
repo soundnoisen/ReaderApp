@@ -24,7 +24,7 @@
     <string name="error_cover_generation_failed">Не удалось сгенерировать обложку книги</string>
     <string name="error_file_not_found">Книга не скачана</string>
     <string name="error_network">Ошибка сети. Проверьте соединение</string>
-    <string name="error_unknown_error">Что-то пошло не так: </string>
+    <string name="error_unknown_error">Что-то пошло не так</string>
 
 
 </resources>

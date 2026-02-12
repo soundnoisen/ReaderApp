@@ -107,6 +107,7 @@ fun UploadScreen(
             } else {
                 FileSelection(
                     uploading = state.progress is UploadProgress.Uploading,
+                    placeholderView = state.isBottomSheetVisible,
                     progressPercent = (state.progress as? UploadProgress.Uploading)?.percent?.toFloat() ?: 0f,
                     onClick = { viewModel.handleIntent(UploadIntent.SelectFile) }
                 )

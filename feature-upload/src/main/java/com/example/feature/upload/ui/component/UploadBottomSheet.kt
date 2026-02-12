@@ -52,7 +52,7 @@ fun UploadBottomSheet(
             Spacer(modifier = Modifier.height(16.dp))
             BaseButton(
                 text = stringResource(R.string.action_download),
-                enabled = state.progress !is UploadProgress.Uploading
+                enabled = !state.isLoading
             ) {
                 onUploadClicked()
             }

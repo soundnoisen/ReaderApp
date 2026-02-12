@@ -80,6 +80,8 @@ class UploadViewModel @Inject constructor(
     }
 
     private fun upload() {
+        _state.update { it.copy(isLoading = true) }
+
         validateForm()?.let { return emitError(it) }
 
         val state = _state.value
@@ -91,7 +93,7 @@ class UploadViewModel @Inject constructor(
 
         uploadJob?.cancel()
         uploadJob = viewModelScope.launch {
-            _state.update { it.copy(isBottomSheetVisible = false) }
+            _state.update { it.copy(isBottomSheetVisible = false, isLoading = false) }
             upload(state.uri!!,state.title, state.author).collect { progress ->
                 _state.update { it.copy(progress = progress) }
                 when (progress) {

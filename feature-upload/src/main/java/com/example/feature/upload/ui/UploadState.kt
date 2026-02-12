@@ -10,6 +10,7 @@ data class UploadState(
     val uri: Uri? = null,
     val progress: UploadProgress = UploadProgress.Idle,
     val isBottomSheetVisible: Boolean = false,
+    val isLoading: Boolean = false,
     val authorError: UploadError? = null,
     val titleError: UploadError? = null,
 )

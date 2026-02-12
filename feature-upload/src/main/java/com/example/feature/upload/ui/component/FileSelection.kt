@@ -31,6 +31,7 @@ import com.example.feature.upload.R
 @Composable
 fun FileSelection(
     uploading: Boolean,
+    placeholderView: Boolean,
     progressPercent: Float,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
@@ -50,26 +51,30 @@ fun FileSelection(
                 Spacer(Modifier.height(32.dp))
             }
         } else {
-            IconButton(
-                onClick = onClick,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_add_file),
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    contentDescription = null
+            if (placeholderView) {
+                ReaderIcon(painterResource(R.drawable.ic_reader))
+            } else {
+                IconButton(
+                    onClick = onClick,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add_file),
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        contentDescription = null
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.label_select_file),
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal
                 )
             }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = stringResource(R.string.label_select_file),
-                color = MaterialTheme.colorScheme.onSecondary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal
-            )
         }
     }
 }
